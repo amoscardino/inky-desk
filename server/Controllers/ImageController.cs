@@ -10,7 +10,11 @@ public class ImageController(ILogger<ImageController> logger) : Controller
         logger.LogDebug("Loading image...");
 
         logger.LogDebug("Fetching browser...");
-        var browserFetcher = new BrowserFetcher();
+        var browserFetcherOptions = new BrowserFetcherOptions
+        {
+            Path = Path.Combine(Directory.GetCurrentDirectory(), "browsers")
+        };
+        var browserFetcher = new BrowserFetcher(browserFetcherOptions);
         await browserFetcher.DownloadAsync();
         logger.LogDebug("Fetching browser complete!");
 

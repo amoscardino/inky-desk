@@ -34,6 +34,7 @@ p {
     text-wrap: pretty;
     overflow-wrap: break-word;
 }
+
 /* #endregion */
 
 html {
@@ -41,6 +42,8 @@ html {
     place-items: center;
     height: 100%;
     font-size: 16px;
+    font-family: "Nunito", sans-serif;
+    font-optical-sizing: auto;
 }
 
 body {
@@ -48,4 +51,99 @@ body {
     height: 300px;
     box-shadow: 0 0 0 0.25rem red;
     overflow: hidden;
+    display: grid;
+    grid-template-columns: min-content minmax(0, auto);
+    grid-template-rows: auto 7.5rem auto;
+    grid-template-areas:
+        "month events"
+        "date events"
+        "day events";
+    place-items: center;
+    row-gap: 0.25rem;
+    column-gap: 0.5rem;
+    padding: 0.25rem;
+}
+
+.month {
+    grid-area: month;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.date {
+    grid-area: date;
+    font-size: 8rem;
+    font-weight: 800;
+    line-height: 1;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.day {
+    grid-area: day;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.events {
+    grid-area: events;
+    place-self: stretch;
+    display: flex;
+    flex-flow: column;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: stretch;
+    border-left: 2px solid black;
+    padding-left: 0.75rem;
+    padding-right: 0.25rem;
+}
+
+.event {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        "time location"
+        "title title";
+    row-gap: 0.5rem;
+
+    &.all-day {
+        display: block;
+    }
+
+    &+& {
+        border-top: 1px solid black;
+        padding-top: 0.75rem;
+    }
+}
+
+.event .time {
+    grid-area: time;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.event .title {
+    grid-area: title;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event .location {
+    grid-area: location;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1;
+    place-self: center end;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }

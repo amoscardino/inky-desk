@@ -1,14 +1,15 @@
+using InkyDesk.Server.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<CalendarService>();
+
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHsts();
-}
-
+app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseStaticFiles();
