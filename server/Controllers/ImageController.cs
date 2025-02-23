@@ -3,23 +3,26 @@ using PuppeteerSharp;
 
 namespace InkyDesk.Server.Controllers;
 
-public class ImageController(ILogger<ImageController> logger) : Controller
+public class ImageController(ILogger<ImageController> logger, IConfiguration config) : Controller
 {
     public async Task<IActionResult> Index()
     {
         logger.LogDebug("Loading image...");
 
-        logger.LogDebug("Fetching browser...");
-        var browserFetcherOptions = new BrowserFetcherOptions
+        var chromeExecPath = config.GetValue<string>("ChromeExecPath");
+
+        if (string.IsNullOrWhiteSpace(chromeExecPath))
         {
-            Path = Path.Combine(Directory.GetCurrentDirectory(), "browsers")
-        };
-        var browserFetcher = new BrowserFetcher(browserFetcherOptions);
-        await browserFetcher.DownloadAsync();
-        logger.LogDebug("Fetching browser complete!");
+            logger.LogDebug("Fetching browser...");
+            var browserFetcher = new BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+            logger.LogDebug("Fetching browser complete!");
+        }
 
         logger.LogDebug("Launching browser...");
-        var launchOptions = new LaunchOptions { Headless = true };
+        var launchOptions = string.IsNullOrWhiteSpace(chromeExecPath)
+            ? new LaunchOptions { Headless = true }
+            : new LaunchOptions { Headless = true, ExecutablePath = chromeExecPath };
         await using var browser = await Puppeteer.LaunchAsync(launchOptions);
         logger.LogDebug("Launching browser complete!");
 
