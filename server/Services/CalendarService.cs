@@ -1,29 +1,37 @@
-using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using InkyDesk.Server.Data;
 using InkyDesk.Server.Models;
+using Microsoft.EntityFrameworkCore;
+using Calendar = Ical.Net.Calendar;
 
 namespace InkyDesk.Server.Services;
 
-public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguration config)
+public class CalendarService(
+    InkyDeskDataContext dataContext,
+    IHttpClientFactory httpClientFactory,
+    ILogger<CalendarService> logger
+)
 {
     private readonly HttpClient httpClient = httpClientFactory.CreateClient();
 
     public async Task<List<EventModel>> GetEventsAsync()
     {
         var models = new List<EventModel>();
-        var urls = config.GetValue<string>("CalendarUrls")?.Split(",") ?? [];
+        var calendars = await dataContext.Calendars
+            .Where(c => c.IsEnabled)
+            .ToListAsync();
 
-        foreach (var url in urls)
+        foreach (var calendar in calendars)
         {
-            var calendarText = await GetCalendarTextAsync(url);
+            var calendarText = await GetCalendarTextAsync(calendar.Url);
 
             if (string.IsNullOrWhiteSpace(calendarText))
                 continue;
 
-            var calendar = Calendar.Load(calendarText);
+            var cal = Calendar.Load(calendarText);
 
-            models.AddRange(GetEvents(calendar));
+            models.AddRange(GetEvents(cal, calendar.Name, calendar.Offset ?? 0));
         }
 
         return models
@@ -44,14 +52,14 @@ public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguratio
         return string.Empty;
     }
 
-    private static List<EventModel> GetEvents(Calendar calendar)
+    private static List<EventModel> GetEvents(Calendar calendar, string calendarName, int offset)
     {
         var calEvents = new List<EventModel>();
-        var now = DateTime.Now;
+        var now = DateTime.Now.AddDays(offset);
 
         foreach (var evt in calendar.Events)
         {
-            var regularEvent = GetRegularEvent(evt, now);
+            var regularEvent = GetRegularEvent(evt, calendarName, now);
 
             if (regularEvent != null)
             {
@@ -59,7 +67,7 @@ public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguratio
                 continue;
             }
 
-            var occurrenceEvent = GetOccurrenceEvent(evt, now);
+            var occurrenceEvent = GetOccurrenceEvent(evt, calendarName, now);
 
             if (occurrenceEvent != null)
             {
@@ -71,7 +79,7 @@ public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguratio
         return calEvents;
     }
 
-    private static EventModel? GetRegularEvent(CalendarEvent evt, DateTime now)
+    private static EventModel? GetRegularEvent(CalendarEvent evt, string calendarName, DateTime now)
     {
         if (evt.RecurrenceRules.Any())
             return null;
@@ -84,6 +92,7 @@ public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguratio
 
         return new EventModel
         {
+            CalendarName = calendarName,
             Title = evt.Summary,
             Location = evt.Location ?? string.Empty,
             IsAllDay = evt.IsAllDay,
@@ -92,7 +101,7 @@ public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguratio
         };
     }
 
-    private static EventModel? GetOccurrenceEvent(CalendarEvent evt, DateTime now)
+    private static EventModel? GetOccurrenceEvent(CalendarEvent evt, string calendarName, DateTime now)
     {
         if (!evt.RecurrenceRules.Any())
             return null;
@@ -108,6 +117,7 @@ public class CalendarService(IHttpClientFactory httpClientFactory, IConfiguratio
 
         return new EventModel
         {
+            CalendarName = calendarName,
             Title = evt.Summary,
             Location = evt.Location ?? string.Empty,
             IsAllDay = evt.IsAllDay,
