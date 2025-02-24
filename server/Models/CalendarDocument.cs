@@ -73,7 +73,8 @@ public class CalendarDocument(List<EventModel> events) : IDocument
                                             .Text(evt.Title)
                                             .Bold()
                                             .FontSize(24)
-                                            .ClampLines(1);
+                                            .ClampLines(1)
+                                            .Italic(evt.IsAllDay && evt.Start.Date != now.Date);
 
                                         if (!evt.IsAllDay)
                                         {
