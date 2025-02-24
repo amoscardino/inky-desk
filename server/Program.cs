@@ -1,10 +1,10 @@
+using InkyDesk.Server.Models;
 using InkyDesk.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<CalendarService>();
-builder.Services.AddTransient<ImageService>();
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 QuestPDF.Settings.EnableDebugging = true;
@@ -26,7 +26,8 @@ app.MapGet("/data", async (CalendarService calendarService) =>
 app.MapGet("/image", async (CalendarService calendarService) =>
 {
     var events = await calendarService.GetEventsAsync();
-    var imageBytes = await ImageService.GenerateImageAsync(events);
+    var document = new CalendarDocument(events);
+    var imageBytes = document.ToImage();
 
     return Results.File(imageBytes, "image/png");
 });

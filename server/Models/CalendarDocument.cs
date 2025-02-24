@@ -1,8 +1,8 @@
-using InkyDesk.Server.Models;
 using QuestPDF.Fluent;
+using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace InkyDesk.Server.Services;
+namespace InkyDesk.Server.Models;
 
 public class CalendarDocument(List<EventModel> events) : IDocument
 {
@@ -97,5 +97,13 @@ public class CalendarDocument(List<EventModel> events) : IDocument
                         });
                 });
         });
+    }
+
+    public byte[] ToImage()
+    {
+        var imageSettings = new ImageGenerationSettings { RasterDpi = 72 };
+        var imageBytes = this.GenerateImages(imageSettings).First();
+
+        return imageBytes;
     }
 }
