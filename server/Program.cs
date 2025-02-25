@@ -15,6 +15,7 @@ builder.Services.AddTransient<CalendarService>();
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 QuestPDF.Settings.EnableDebugging = true;
+QuestPDF.Settings.FontDiscoveryPaths.Add("Fonts");
 
 var app = builder.Build();
 

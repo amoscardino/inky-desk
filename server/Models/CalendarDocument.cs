@@ -13,7 +13,7 @@ public class CalendarDocument(List<EventModel> events) : IDocument
         container.Page(page =>
         {
             page.Size(400, 300);
-            page.DefaultTextStyle(TextStyle.Default.FontSize(18));
+            page.DefaultTextStyle(TextStyle.Default.FontFamily("ChareInk6SP").FontSize(18));
             page.Margin(4);
 
             page.Content()
@@ -25,6 +25,7 @@ public class CalendarDocument(List<EventModel> events) : IDocument
                         .AlignCenter()
                         .Column(col =>
                         {
+                            col.Spacing(2);
                             col.Item()
                                 .AlignCenter()
                                 .Text(now.ToString("MMM"))
@@ -33,9 +34,10 @@ public class CalendarDocument(List<EventModel> events) : IDocument
                                 .Bold();
                             col.Item()
                                 .AlignCenter()
+                                .PaddingTop(4)
                                 .Text(now.ToString("dd"))
                                 .FontSize(92)
-                                .ExtraBold()
+                                .Bold()
                                 .LineHeight(0.9f);
                             col.Item()
                                 .AlignCenter()
@@ -47,7 +49,7 @@ public class CalendarDocument(List<EventModel> events) : IDocument
 
                     row.AutoItem()
                         .Padding(8)
-                        .LineVertical(1);
+                        .LineVertical(2);
 
                     if (events.Count == 0)
                     {
@@ -64,9 +66,10 @@ public class CalendarDocument(List<EventModel> events) : IDocument
                         row.RelativeItem(0.7f)
                             .AlignTop()
                             .AlignCenter()
+                            .PaddingVertical(12)
                             .Column(col =>
                             {
-                                col.Spacing(8);
+                                col.Spacing(12);
 
                                 for (int i = 0; i < events.Count; i++)
                                 {

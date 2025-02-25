@@ -9,8 +9,7 @@ namespace InkyDesk.Server.Services;
 
 public class CalendarService(
     InkyDeskDataContext dataContext,
-    IHttpClientFactory httpClientFactory,
-    ILogger<CalendarService> logger
+    IHttpClientFactory httpClientFactory
 )
 {
     private readonly HttpClient httpClient = httpClientFactory.CreateClient();
