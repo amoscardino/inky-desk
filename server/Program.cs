@@ -1,3 +1,4 @@
+using System.Reflection;
 using InkyDesk.Server.Data;
 using InkyDesk.Server.Models;
 using InkyDesk.Server.Services;
@@ -29,7 +30,11 @@ app.UseDeveloperExceptionPage();
 
 app.MapGet("/", () =>
 {
-    return "Hello World!";
+    var assembly = Assembly.GetEntryAssembly()!;
+    var name = assembly.GetName().Name;
+    var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+    return $"{name} v{version}";
 });
 
 app.MapGet("/data", async (CalendarService calendarService) =>
