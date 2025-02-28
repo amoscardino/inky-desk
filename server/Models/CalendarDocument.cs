@@ -4,7 +4,7 @@ using QuestPDF.Infrastructure;
 
 namespace InkyDesk.Server.Models;
 
-public class CalendarDocument(List<EventModel> events) : IDocument
+public class CalendarDocument(List<EventModel> events, string weather) : IDocument
 {
     public void Compose(IDocumentContainer container)
     {
@@ -18,102 +18,114 @@ public class CalendarDocument(List<EventModel> events) : IDocument
 
             page.Content()
                 .Extend()
-                .Row(row =>
+                .Layers(layers =>
                 {
-                    row.RelativeItem(0.3f)
-                        .AlignMiddle()
-                        .AlignCenter()
-                        .Column(col =>
+                    layers.PrimaryLayer()
+                        .Row(row =>
                         {
-                            col.Spacing(2);
-                            col.Item()
+                            row.RelativeItem(0.3f)
+                                .AlignMiddle()
                                 .AlignCenter()
-                                .Text(now.ToString("MMM"))
-                                .FontSize(36)
-                                .LetterSpacing(0.05f)
-                                .Bold();
-                            col.Item()
-                                .AlignCenter()
-                                .PaddingTop(4)
-                                .Text(now.ToString("dd"))
-                                .FontSize(92)
-                                .Bold()
-                                .LineHeight(0.9f);
-                            col.Item()
-                                .AlignCenter()
-                                .Text(now.ToString("ddd"))
-                                .FontSize(36)
-                                .LetterSpacing(0.05f)
-                                .Bold();
+                                .Column(col =>
+                                {
+                                    col.Spacing(2);
+                                    col.Item()
+                                        .AlignCenter()
+                                        .Text(now.ToString("MMM"))
+                                        .FontSize(36)
+                                        .LetterSpacing(0.05f)
+                                        .Bold();
+                                    col.Item()
+                                        .AlignCenter()
+                                        .PaddingTop(4)
+                                        .Text(now.ToString("dd"))
+                                        .FontSize(92)
+                                        .Bold()
+                                        .LineHeight(0.9f);
+                                    col.Item()
+                                        .AlignCenter()
+                                        .Text(now.ToString("ddd"))
+                                        .FontSize(36)
+                                        .LetterSpacing(0.05f)
+                                        .Bold();
+                                });
+
+                            row.AutoItem()
+                                .Padding(8)
+                                .LineVertical(2);
+
+                            if (events.Count == 0)
+                            {
+                                row.RelativeItem(0.7f)
+                                    .AlignMiddle()
+                                    .AlignCenter()
+                                    .Text("Nothing!")
+                                    .FontSize(22)
+                                    .Italic()
+                                    .Light();
+                            }
+                            else
+                            {
+                                row.RelativeItem(0.7f)
+                                    .AlignTop()
+                                    .AlignCenter()
+                                    .PaddingVertical(12)
+                                    .Column(col =>
+                                    {
+                                        col.Spacing(12);
+
+                                        for (int i = 0; i < events.Count; i++)
+                                        {
+                                            var evt = events[i];
+
+                                            if (i > 0)
+                                            {
+                                                col.Item().PaddingHorizontal(8).LineHorizontal(1);
+                                            }
+
+                                            col.Item()
+                                                .Column(evtCol =>
+                                                {
+                                                    evtCol.Item()
+                                                        .PaddingBottom(4)
+                                                        .Text(evt.Title)
+                                                        .Bold()
+                                                        .FontSize(24)
+                                                        .ClampLines(1)
+                                                        .Italic(evt.IsAllDay && evt.Start.Date != now.Date);
+
+                                                    if (!evt.IsAllDay)
+                                                    {
+                                                        evtCol.Item()
+                                                            .Row(evtRow =>
+                                                            {
+                                                                evtRow.RelativeItem(0.3f)
+                                                                    .AlignLeft()
+                                                                    .AlignMiddle()
+                                                                    .Text(evt.Start.ToString("h:mm tt").ToLower());
+
+                                                                evtRow.RelativeItem(0.7f)
+                                                                    .AlignRight()
+                                                                    .AlignMiddle()
+                                                                    .Text(evt.Location)
+                                                                    .Light()
+                                                                    .Italic()
+                                                                    .ClampLines(1);
+                                                            });
+                                                    }
+                                                });
+                                        }
+                                    });
+                            }
                         });
 
-                    row.AutoItem()
+                    layers.Layer()
+                        .Width(120)
+                        .AlignBottom()
+                        .AlignCenter()
                         .Padding(8)
-                        .LineVertical(2);
-
-                    if (events.Count == 0)
-                    {
-                        row.RelativeItem(0.7f)
-                            .AlignMiddle()
-                            .AlignCenter()
-                            .Text("Nothing!")
-                            .FontSize(22)
-                            .Italic()
-                            .Light();
-                    }
-                    else
-                    {
-                        row.RelativeItem(0.7f)
-                            .AlignTop()
-                            .AlignCenter()
-                            .PaddingVertical(12)
-                            .Column(col =>
-                            {
-                                col.Spacing(12);
-
-                                for (int i = 0; i < events.Count; i++)
-                                {
-                                    var evt = events[i];
-
-                                    if (i > 0)
-                                    {
-                                        col.Item().PaddingHorizontal(8).LineHorizontal(1);
-                                    }
-
-                                    col.Item()
-                                        .Column(evtCol =>
-                                        {
-                                            evtCol.Item()
-                                                .PaddingBottom(4)
-                                                .Text(evt.Title)
-                                                .Bold()
-                                                .FontSize(24)
-                                                .ClampLines(1)
-                                                .Italic(evt.IsAllDay && evt.Start.Date != now.Date);
-
-                                            if (!evt.IsAllDay)
-                                            {
-                                                evtCol.Item()
-                                                    .Row(evtRow =>
-                                                    {
-                                                        evtRow.RelativeItem(0.3f)
-                                                            .AlignLeft()
-                                                            .AlignMiddle()
-                                                            .Text(evt.Start.ToString("h:mm tt").ToLower());
-
-                                                        evtRow.RelativeItem(0.7f)
-                                                            .AlignRight()
-                                                            .AlignMiddle()
-                                                            .Text(evt.Location)
-                                                            .Light()
-                                                            .Italic()
-                                                            .ClampLines(1);
-                                                    });
-                                            }
-                                        });
-                                }
-                            });
-                    }
+                        .Text(weather)
+                        .ClampLines(1);
                 });
         });
     }

@@ -12,7 +12,7 @@ public class CalendarService(
     IHttpClientFactory httpClientFactory
 )
 {
-    private readonly HttpClient httpClient = httpClientFactory.CreateClient();
+    private readonly HttpClient httpClient = httpClientFactory.CreateClient("calendar");
 
     public async Task<List<EventModel>> GetEventsAsync()
     {
