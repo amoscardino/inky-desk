@@ -12,20 +12,10 @@ try:
     
     # Check if the request was successful
     if response.status_code == 200:
-        # Write the content to a file
-        with open('image.png', 'wb') as f:
-            f.write(response.content)
+        # Read the image data
+        img = Image.open(io.BytesIO(response.content))
 
-        # Load from file
-        img = Image.open('image.png').convert('RGB')
-
-        print(f"Image size: {img.size}")
-
-        palette = Image.new('P', (1, 1))
-        palette.putpalette([255, 255, 255, 0, 0, 0, 255, 0, 0,] + [0, 0, 0] * 253)
-
-        # Quantize our image using Inky's 3-colour palette
-        img = img.quantize(colors=3, palette=palette)
+        print(f"Image fetched successfully. Size: {img.size}")
 
         # Display the image on the InkyWHAT screen
         display.set_border(display.WHITE)
