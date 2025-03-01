@@ -1,10 +1,11 @@
 import io
 import requests
-from inky import InkyWHAT
+from inky.auto import auto
 from PIL import Image
 
 # Initialize the InkyWHAT display
-display = InkyWHAT('red')
+inky_display = auto(ask_user=True, verbose=True)
+inky_display.set_border(inky_display.WHITE)
 
 try:
     # Fetch the image
@@ -15,12 +16,9 @@ try:
         # Read the image data
         img = Image.open(io.BytesIO(response.content))
 
-        print(f"Image fetched successfully. Size: {img.size}")
-
         # Display the image on the InkyWHAT screen
-        display.set_border(display.WHITE)
-        display.set_image(img)
-        display.show()
+        inky_display.set_image(img)
+        inky_display.show()
     else:
         print(f"Failed to fetch image. Status code: {response.status_code}")
 except requests.exceptions.RequestException as e:
