@@ -19,7 +19,7 @@ try:
         print("Image saved successfully")
 
         # Load from file
-        img = Image.open('image.png')
+        img = Image.open('image.png').convert('RGB')
 
         palette = Image.new('P', (1, 1))
         palette.putpalette([255, 255, 255, 0, 0, 0, 255, 0, 0,] + [0, 0, 0] * 253)
