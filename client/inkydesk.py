@@ -4,7 +4,7 @@ from inky import InkyWHAT
 from PIL import Image
 
 # Initialize the InkyWHAT display
-display = InkyWHAT('black')
+display = InkyWHAT('red')
 
 try:
     # Fetch the image
