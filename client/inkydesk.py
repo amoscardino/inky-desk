@@ -15,20 +15,13 @@ try:
         # Convert the response content into an image
         img_bytes = io.BytesIO(response.content)
         img = Image.open(img_bytes)
-	img.save('output.png')
 
-	palette = Image.new('P', (1, 1))
-	palette.putpalette(
-	[
-	    255, 255, 255,   # 0 = White
-	    0, 0, 0,         # 1 = Black
-	    255, 0, 0,       # 2 = Red (255, 255, 0 for yellow)
-	] + [0, 0, 0] * 253  # Zero fill the rest of the 256 colour palette
-	)
+        palette = Image.new('P', (1, 1))
+        palette.putpalette([255, 255, 255, 0, 0, 0, 255, 0, 0,] + [0, 0, 0] * 253)
 
-	# Quantize our image using Inky's 3-colour palette
-	img = img.quantize(colors=3, palette=palette)
-        
+        # Quantize our image using Inky's 3-colour palette
+        img = img.quantize(colors=3, palette=palette)
+
         # Display the image on the InkyWHAT screen
         display.set_image(img)
         display.show()
