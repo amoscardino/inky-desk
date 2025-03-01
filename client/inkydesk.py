@@ -16,8 +16,6 @@ try:
         with open('image.png', 'wb') as f:
             f.write(response.content)
 
-        print("Image saved successfully")
-
         # Load from file
         img = Image.open('image.png').convert('RGB')
 
@@ -28,6 +26,7 @@ try:
         img = img.quantize(colors=3, palette=palette)
 
         # Display the image on the InkyWHAT screen
+        display.set_border(display.WHITE)
         display.set_image(img)
         display.show()
     else:
