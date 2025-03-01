@@ -12,9 +12,14 @@ try:
     
     # Check if the request was successful
     if response.status_code == 200:
-        # Convert the response content into an image
-        img_bytes = io.BytesIO(response.content)
-        img = Image.open(img_bytes)
+        # Write the content to a file
+        with open('image.png', 'wb') as f:
+            f.write(response.content)
+
+        print("Image saved successfully")
+
+        # Load from file
+        img = Image.open('image.png')
 
         palette = Image.new('P', (1, 1))
         palette.putpalette([255, 255, 255, 0, 0, 0, 255, 0, 0,] + [0, 0, 0] * 253)
