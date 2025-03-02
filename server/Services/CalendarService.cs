@@ -86,7 +86,7 @@ public class CalendarService(
         if (evt.Start.Value.Date != now.Date)
             return null;
 
-        if (!evt.IsAllDay && evt.Start.Value < now)
+        if (!evt.IsAllDay && evt.Start.Value.ToLocalTime() < now)
             return null;
 
         return new EventModel
