@@ -5,7 +5,7 @@ public class WeatherService(IHttpClientFactory httpClientFactory, IConfiguration
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("weather");
     private readonly string _stationId = configuration["Weather:StationId"] ?? string.Empty;
 
-    public async Task<string> GetWeatherAsync()
+    public async Task<(string, string)> GetWeatherAsync()
     {
         var response = await _httpClient.GetAsync($"/stations/{_stationId}/observations/latest");
 
@@ -15,9 +15,9 @@ public class WeatherService(IHttpClientFactory httpClientFactory, IConfiguration
             ?? throw new Exception("Failed to parse weather data.");
 
         var weather = content.Properties;
-        var temperature = Math.Round(weather.Temperature.Value.GetValueOrDefault() * 9 / 5 + 32, 1);
+        var temperature = Math.Round(weather.Temperature.Value.GetValueOrDefault() * 9 / 5 + 32, 0);
 
-        return $"{temperature}°F - {weather.TextDescription}";
+        return ($"{temperature}°F", weather.TextDescription);
     }
 
     private class Observations

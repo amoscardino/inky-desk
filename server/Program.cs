@@ -13,6 +13,7 @@ var userAgent = $"{name} v{version}";
 // Configure QuestPDF settings
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 QuestPDF.Settings.EnableDebugging = true;
+QuestPDF.Settings.UseEnvironmentFonts = false;
 QuestPDF.Settings.FontDiscoveryPaths.Add("Fonts");
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,7 +54,8 @@ app.MapGet("/events", async (CalendarService calendarService) =>
 
 app.MapGet("/weather", async (WeatherService weatherService) =>
 {
-    return await weatherService.GetWeatherAsync();
+    var weather = await weatherService.GetWeatherAsync();
+    return $"{weather.Item1} {weather.Item2}";
 });
 
 app.MapGet("/image", async (CalendarService calendarService, WeatherService weatherService) =>

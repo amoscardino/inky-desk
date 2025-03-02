@@ -4,7 +4,7 @@ using QuestPDF.Infrastructure;
 
 namespace InkyDesk.Server.Models;
 
-public class CalendarDocument(List<EventModel> events, string weather) : IDocument
+public class CalendarDocument(List<EventModel> events, (string, string) weather) : IDocument
 {
     public void Compose(IDocumentContainer container)
     {
@@ -13,7 +13,7 @@ public class CalendarDocument(List<EventModel> events, string weather) : IDocume
         container.Page(page =>
         {
             page.Size(400, 300);
-            page.DefaultTextStyle(TextStyle.Default.FontFamily("ChareInk6SP").FontSize(18));
+            page.DefaultTextStyle(TextStyle.Default.FontFamily("ChareInk6SP", "Noto Emoji").FontSize(18));
             page.Margin(4);
 
             page.Content()
@@ -38,7 +38,7 @@ public class CalendarDocument(List<EventModel> events, string weather) : IDocume
                                     col.Item()
                                         .AlignCenter()
                                         .PaddingTop(4)
-                                        .Text(now.ToString("dd"))
+                                        .Text(now.ToString("%d"))
                                         .FontSize(92)
                                         .Bold()
                                         .LineHeight(0.9f);
@@ -109,7 +109,6 @@ public class CalendarDocument(List<EventModel> events, string weather) : IDocume
                                                                     .AlignMiddle()
                                                                     .Text(evt.Location)
                                                                     .Light()
-                                                                    .Italic()
                                                                     .ClampLines(1);
                                                             });
                                                     }
@@ -124,8 +123,18 @@ public class CalendarDocument(List<EventModel> events, string weather) : IDocume
                         .AlignBottom()
                         .AlignCenter()
                         .Padding(8)
-                        .Text(weather)
-                        .ClampLines(1);
+                        .Column(col =>
+                        {
+                            col.Spacing(2);
+                            col.Item()
+                                .AlignCenter()
+                                .Text(weather.Item1)
+                                .FontSize(14);
+                            col.Item()
+                                .AlignCenter()
+                                .Text(weather.Item2)
+                                .FontSize(14);
+                        });
                 });
         });
     }
