@@ -5,7 +5,6 @@ from PIL import Image
 
 # Initialize the InkyWHAT display
 inky_display = auto(ask_user=True, verbose=True)
-inky_display.set_border(inky_display.WHITE)
 
 try:
     # Fetch the image
