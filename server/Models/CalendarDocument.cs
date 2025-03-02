@@ -141,7 +141,7 @@ public class CalendarDocument(List<EventModel> events, (string, string) weather)
 
     public byte[] ToImage()
     {
-        var imageSettings = new ImageGenerationSettings { RasterDpi = 72 };
+        var imageSettings = new ImageGenerationSettings { RasterDpi = 288 };
         var imageBytes = this.GenerateImages(imageSettings).First();
 
         return imageBytes;
