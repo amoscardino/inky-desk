@@ -86,8 +86,13 @@ public class CalendarService(
         if (evt.Start.Value.Date != now.Date)
             return null;
 
-        if (!evt.IsAllDay && evt.Start.Value.ToLocalTime() < now)
-            return null;
+        if (!evt.IsAllDay)
+        {
+            var evtTime = evt.Start.IsUtc ? evt.Start.Value.ToLocalTime() : evt.Start.Value;
+
+            if (evtTime < now)
+                return null;
+        }
 
         return new EventModel
         {

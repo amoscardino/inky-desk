@@ -31,6 +31,7 @@ builder.Services.AddHttpClient("weather", client =>
 });
 builder.Services.AddTransient<CalendarService>();
 builder.Services.AddTransient<WeatherService>();
+builder.Services.AddTransient<ImageService>();
 
 var app = builder.Build();
 
@@ -64,6 +65,13 @@ app.MapGet("/image", async (CalendarService calendarService, WeatherService weat
     var weather = await weatherService.GetWeatherAsync();
     var document = new CalendarDocument(events, weather);
     var imageBytes = document.ToImage();
+
+    return Results.File(imageBytes, "image/png");
+});
+
+app.MapGet("/image2", async (ImageService imageService) =>
+{
+    var imageBytes = await imageService.GetImageAsync();
 
     return Results.File(imageBytes, "image/png");
 });

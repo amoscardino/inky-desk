@@ -61,8 +61,7 @@ public class CalendarDocument(List<EventModel> events, (string, string) weather)
                                     .AlignCenter()
                                     .Text("Nothing!")
                                     .FontSize(22)
-                                    .Italic()
-                                    .Light();
+                                    .Italic();
                             }
                             else
                             {
@@ -108,7 +107,6 @@ public class CalendarDocument(List<EventModel> events, (string, string) weather)
                                                                     .AlignRight()
                                                                     .AlignMiddle()
                                                                     .Text(evt.Location)
-                                                                    .Light()
                                                                     .ClampLines(1);
                                                             });
                                                     }
@@ -122,18 +120,18 @@ public class CalendarDocument(List<EventModel> events, (string, string) weather)
                         .Width(120)
                         .AlignBottom()
                         .AlignCenter()
-                        .Padding(8)
+                        .Padding(4)
                         .Column(col =>
                         {
                             col.Spacing(2);
                             col.Item()
                                 .AlignCenter()
                                 .Text(weather.Item1)
-                                .FontSize(14);
+                                .FontSize(16);
                             col.Item()
                                 .AlignCenter()
                                 .Text(weather.Item2)
-                                .FontSize(14);
+                                .FontSize(16);
                         });
                 });
         });
