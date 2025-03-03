@@ -15,6 +15,9 @@ try:
         # Read the image data
         img = Image.open(io.BytesIO(response.content))
 
+        # Resize the image to fit the InkyWHAT screen
+        img = img.resize(inky_display.resolution, resample=Image.LANCZOS)
+
         # Display the image on the InkyWHAT screen
         inky_display.set_image(img)
         inky_display.show()
