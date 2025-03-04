@@ -1,7 +1,6 @@
 using InkyDesk.Server.Models;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.ColorSpaces;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -86,7 +85,7 @@ public class ImageService
         var dateRect = TextMeasurer.MeasureAdvance(date, dateOptions);
         dateOptions.HorizontalAlignment = HorizontalAlignment.Center;
         dateOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - MarginDouble);
-        imageContext.DrawText(dateOptions, date, _brushWhite);
+        imageContext.DrawText(_lineDrawingOptions, dateOptions, date, _brushWhite, null);
 
         var month = now.ToString("MMM");
         var monthFont = _fontCollection.Get("ChareInk6SP").CreateFont(36 * Unit, FontStyle.Bold);
@@ -94,7 +93,7 @@ public class ImageService
         var monthRect = TextMeasurer.MeasureAdvance(month, monthOptions);
         monthOptions.HorizontalAlignment = HorizontalAlignment.Center;
         monthOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - monthRect.Height - MarginDouble - MarginHalf);
-        imageContext.DrawText(monthOptions, month, _brushWhite);
+        imageContext.DrawText(_lineDrawingOptions, monthOptions, month, _brushWhite, null);
 
         var dayOfWeek = now.ToString("ddd");
         var dayOfWeekFont = _fontCollection.Get("ChareInk6SP").CreateFont(36 * Unit, FontStyle.Bold);
@@ -103,7 +102,7 @@ public class ImageService
             HorizontalAlignment = HorizontalAlignment.Center,
             Origin = new PointF(DateWidth / 2, (Height / 2f) + (dateRect.Height / 2f) - MarginDouble)
         };
-        imageContext.DrawText(dayOfWeekOptions, dayOfWeek, _brushWhite);
+        imageContext.DrawText(_lineDrawingOptions, dayOfWeekOptions, dayOfWeek, _brushWhite, null);
     }
 
     private void DrawEvents(IImageProcessingContext imageContext, List<EventModel> events)
@@ -124,7 +123,7 @@ public class ImageService
 
             titleOptions.Origin = new PointF(DateWidth + Margin, eventY);
 
-            imageContext.DrawText(titleOptions, title, _brushBlack);
+            imageContext.DrawText(_lineDrawingOptions, titleOptions, title, _brushBlack, null);
 
             eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(title, titleOptions).Height + Margin);
 
@@ -135,7 +134,7 @@ public class ImageService
 
             timeLocationOptions.Origin = new PointF(DateWidth + Margin, eventY);
 
-            imageContext.DrawText(timeLocationOptions, timeLocation, _brushBlack);
+            imageContext.DrawText(_lineDrawingOptions, timeLocationOptions, timeLocation, _brushBlack, null);
 
             eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height + Margin + MarginHalf);
 
@@ -173,9 +172,9 @@ public class ImageService
         var weatherRect2 = TextMeasurer.MeasureBounds(weatherLine2, weatherOptions);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height - MarginHalf - weatherRect2.Height);
-        imageContext.DrawText(weatherOptions, weatherLine1, _brushWhite);
+        imageContext.DrawText(_lineDrawingOptions, weatherOptions, weatherLine1, _brushWhite, null);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height);
-        imageContext.DrawText(weatherOptions, weatherLine2, _brushWhite);
+        imageContext.DrawText(_lineDrawingOptions, weatherOptions, weatherLine2, _brushWhite, null);
     }
 }
