@@ -26,8 +26,9 @@ public class ImageService
     private readonly WeatherService _weatherService;
 
     private readonly FontCollection _fontCollection;
-    private readonly Brush _brush;
-    private readonly Brush _brushAlt;
+    private readonly Brush _brushBlack;
+    private readonly Brush _brushRed;
+    private readonly Brush _brushWhite;
     private readonly DrawingOptions _lineDrawingOptions;
 
     public ImageService(CalendarService calendarService, WeatherService weatherService)
@@ -42,8 +43,9 @@ public class ImageService
         _fontCollection.Add("Fonts/NotoEmoji-Regular.ttf");
         _fontCollection.Add("Fonts/NotoEmoji-Bold.ttf");
 
-        _brush = Brushes.Solid(Color.Black);
-        _brushAlt = Brushes.Solid(Color.Red);
+        _brushBlack = Brushes.Solid(Color.Black);
+        _brushRed = Brushes.Solid(Color.Red);
+        _brushWhite = Brushes.Solid(Color.White);
 
         _lineDrawingOptions = new DrawingOptions
         {
@@ -74,6 +76,8 @@ public class ImageService
 
     private void DrawDate(IImageProcessingContext imageContext)
     {
+        imageContext.FillPolygon(_brushRed, new PointF(0, 0), new PointF(DateWidth, 0), new PointF(DateWidth, Height), new PointF(0, Height));
+
         var now = DateTime.Now;
 
         var date = now.ToString("%d");
@@ -82,15 +86,15 @@ public class ImageService
         var dateRect = TextMeasurer.MeasureAdvance(date, dateOptions);
         dateOptions.HorizontalAlignment = HorizontalAlignment.Center;
         dateOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - MarginDouble);
-        imageContext.DrawText(dateOptions, date, _brushAlt);
+        imageContext.DrawText(dateOptions, date, _brushWhite);
 
         var month = now.ToString("MMM");
         var monthFont = _fontCollection.Get("ChareInk6SP").CreateFont(36 * Unit, FontStyle.Bold);
         var monthOptions = new RichTextOptions(monthFont);
         var monthRect = TextMeasurer.MeasureAdvance(month, monthOptions);
         monthOptions.HorizontalAlignment = HorizontalAlignment.Center;
-        monthOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - monthRect.Height - MarginDouble);
-        imageContext.DrawText(monthOptions, month, _brush);
+        monthOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - monthRect.Height - MarginDouble - MarginHalf);
+        imageContext.DrawText(monthOptions, month, _brushWhite);
 
         var dayOfWeek = now.ToString("ddd");
         var dayOfWeekFont = _fontCollection.Get("ChareInk6SP").CreateFont(36 * Unit, FontStyle.Bold);
@@ -99,34 +103,62 @@ public class ImageService
             HorizontalAlignment = HorizontalAlignment.Center,
             Origin = new PointF(DateWidth / 2, (Height / 2f) + (dateRect.Height / 2f) - MarginDouble)
         };
-        imageContext.DrawText(dayOfWeekOptions, dayOfWeek, _brush);
-
-        imageContext.DrawLine(_lineDrawingOptions, _brush, 2f, new PointF(DateWidth - 0.5f, Margin), new PointF(DateWidth - 0.5f, Height - Margin));
+        imageContext.DrawText(dayOfWeekOptions, dayOfWeek, _brushWhite);
     }
 
     private void DrawEvents(IImageProcessingContext imageContext, List<EventModel> events)
     {
-        var eventY = MarginDouble;
+        var eventY = (float)MarginDouble;
 
         // TODO: Emoji font as fallback?
         var titleFont = _fontCollection.Get("ChareInk6SP").CreateFont(24 * Unit, FontStyle.Bold);
-        var timeLocationFont = _fontCollection.Get("ChareInk6SP").CreateFont(18 * Unit, FontStyle.Regular);
+        var timeLocationFont = _fontCollection.Get("ChareInk6SP").CreateFont(20 * Unit, FontStyle.Regular);
 
-        var titleOptions = new RichTextOptions(titleFont) { WrappingLength = EventsWidth };
-        var timeOptions = new RichTextOptions(timeLocationFont) { WrappingLength = EventsWidth / 2 };
-        var locationOptions = new RichTextOptions(timeLocationFont) { WrappingLength = EventsWidth / 2 };
+        var titleOptions = new RichTextOptions(titleFont);
+        var timeLocationOptions = new RichTextOptions(timeLocationFont);
 
         for (int i = 0; i < events.Count; i++)
         {
             var evt = events[i];
+            var title = TruncateText(evt.Title, EventsWidth - MarginDouble, titleOptions);
 
-            var titleRect = TextMeasurer.MeasureBounds(evt.Title, titleOptions);
+            titleOptions.Origin = new PointF(DateWidth + Margin, eventY);
 
-            if (evt.IsAllDay)
+            imageContext.DrawText(titleOptions, title, _brushBlack);
+
+            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(title, titleOptions).Height + Margin);
+
+            var timeLocation = string.IsNullOrWhiteSpace(evt.Location)
+                ? $"{evt.Start:h:mm tt}"
+                : $"{evt.Start:h:mm tt} – {evt.Location}";
+            timeLocation = TruncateText(timeLocation, EventsWidth - MarginDouble, timeLocationOptions);
+
+            timeLocationOptions.Origin = new PointF(DateWidth + Margin, eventY);
+
+            imageContext.DrawText(timeLocationOptions, timeLocation, _brushBlack);
+
+            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height + Margin + MarginHalf);
+
+            if (i < events.Count - 1)
             {
+                imageContext.DrawLine(_lineDrawingOptions, _brushBlack, 1f, new PointF(DateWidth + MarginDouble, eventY), new PointF(Width, eventY));
 
+                eventY += Margin + MarginHalf;
             }
         }
+    }
+
+    private static string TruncateText(string text, float width, RichTextOptions options)
+    {
+        var rect = TextMeasurer.MeasureBounds(text, options);
+
+        while (rect.Width >= width)
+        {
+            text = text.TrimEnd('…')[..^1] + "…";
+            rect = TextMeasurer.MeasureBounds(text, options);
+        }
+
+        return text;
     }
 
     private void DrawWeather(IImageProcessingContext imageContext, string weatherLine1, string weatherLine2)
@@ -141,10 +173,9 @@ public class ImageService
         var weatherRect2 = TextMeasurer.MeasureBounds(weatherLine2, weatherOptions);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height - MarginHalf - weatherRect2.Height);
-        imageContext.DrawText(weatherOptions, weatherLine1, _brush);
-
+        imageContext.DrawText(weatherOptions, weatherLine1, _brushWhite);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height);
-        imageContext.DrawText(weatherOptions, weatherLine2, _brush);
+        imageContext.DrawText(weatherOptions, weatherLine2, _brushWhite);
     }
 }

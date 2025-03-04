@@ -119,14 +119,22 @@ public class CalendarService(
 
         var occurrence = occurrences.First();
 
-        return new EventModel
+        if (!evt.IsAllDay)
         {
-            CalendarName = calendarName,
-            Title = evt.Summary,
-            Location = evt.Location ?? string.Empty,
-            IsAllDay = evt.IsAllDay,
-            Start = occurrence.Period.StartTime.Value,
-            End = occurrence.Period.EndTime?.Value
-        };
+            var evtTime = occurrence.Period.StartTime.IsUtc ? occurrence.Period.StartTime.Value.ToLocalTime() : occurrence.Period.StartTime.Value;
+
+            if (evtTime < now)
+                return null;
+        }
+
+        return new EventModel
+            {
+                CalendarName = calendarName,
+                Title = evt.Summary,
+                Location = evt.Location ?? string.Empty,
+                IsAllDay = evt.IsAllDay,
+                Start = occurrence.Period.StartTime.Value,
+                End = occurrence.Period.EndTime?.Value
+            };
     }
 }

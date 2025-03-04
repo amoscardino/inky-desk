@@ -1,6 +1,5 @@
 using System.Reflection;
 using InkyDesk.Server.Data;
-using InkyDesk.Server.Models;
 using InkyDesk.Server.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +8,6 @@ var assembly = Assembly.GetEntryAssembly()!;
 var name = assembly.GetName().Name;
 var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 var userAgent = $"{name} v{version}";
-
-// Configure QuestPDF settings
-QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
-QuestPDF.Settings.EnableDebugging = true;
-QuestPDF.Settings.UseEnvironmentFonts = false;
-QuestPDF.Settings.FontDiscoveryPaths.Add("Fonts");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,17 +52,7 @@ app.MapGet("/weather", async (WeatherService weatherService) =>
     return $"{weather.Item1} {weather.Item2}";
 });
 
-app.MapGet("/image", async (CalendarService calendarService, WeatherService weatherService) =>
-{
-    var events = await calendarService.GetEventsAsync();
-    var weather = await weatherService.GetWeatherAsync();
-    var document = new CalendarDocument(events, weather);
-    var imageBytes = document.ToImage();
-
-    return Results.File(imageBytes, "image/png");
-});
-
-app.MapGet("/image2", async (ImageService imageService) =>
+app.MapGet("/image", async (ImageService imageService) =>
 {
     var imageBytes = await imageService.GetImageAsync();
 
