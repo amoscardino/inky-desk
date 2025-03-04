@@ -13,13 +13,14 @@ public class ImageService
     private const float Unit = 1;
 
     private const float Margin = 8 * Unit;
-    private const float MarginHalf = (int)(Margin / 2d);
-    private const float MarginDouble = Margin * 2;
+    private const float MarginSm = Margin / 2f;
+    private const float MarginLg = Margin * 1.5f;
+    private const float MarginXl = Margin * 2;
 
     private const float Width = 400 * Unit;
     private const float Height = 300 * Unit;
 
-    private const float DateWidth = 120 * Unit;
+    private const float DateWidth = 110 * Unit;
     private const float EventsWidth = Width - DateWidth - Margin;
 
     private readonly CalendarService _calendarService;
@@ -35,7 +36,7 @@ public class ImageService
     {
         _calendarService = calendarService;
         _weatherService = weatherService;
-        
+
         _fontCollection = new FontCollection();
         _fontCollection.Add("Fonts/NotoSans-Regular.ttf");
         _fontCollection.Add("Fonts/NotoSans-Bold.ttf");
@@ -90,7 +91,7 @@ public class ImageService
         var dateOptions = new RichTextOptions(dateFont);
         var dateRect = TextMeasurer.MeasureAdvance(date, dateOptions);
         dateOptions.HorizontalAlignment = HorizontalAlignment.Center;
-        dateOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - MarginDouble);
+        dateOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - MarginXl);
         imageContext.DrawText(_lineDrawingOptions, dateOptions, date, _brushWhite, null);
 
         var month = now.ToString("MMM");
@@ -98,7 +99,7 @@ public class ImageService
         var monthOptions = new RichTextOptions(monthFont);
         var monthRect = TextMeasurer.MeasureAdvance(month, monthOptions);
         monthOptions.HorizontalAlignment = HorizontalAlignment.Center;
-        monthOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - monthRect.Height - MarginDouble - MarginHalf);
+        monthOptions.Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - monthRect.Height - MarginXl - MarginSm);
         imageContext.DrawText(_lineDrawingOptions, monthOptions, month, _brushWhite, null);
 
         var dayOfWeek = now.ToString("ddd");
@@ -106,17 +107,17 @@ public class ImageService
         var dayOfWeekOptions = new RichTextOptions(dayOfWeekFont)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
-            Origin = new PointF(DateWidth / 2, (Height / 2f) + (dateRect.Height / 2f) - MarginDouble)
+            Origin = new PointF(DateWidth / 2, (Height / 2f) + (dateRect.Height / 2f) - MarginXl)
         };
         imageContext.DrawText(_lineDrawingOptions, dayOfWeekOptions, dayOfWeek, _brushWhite, null);
     }
 
     private void DrawEvents(IImageProcessingContext imageContext, List<EventModel> events)
     {
-        var eventY = MarginDouble;
+        var eventY = MarginXl;
 
         var titleFont = _fontCollection.Get("Noto Sans").CreateFont(24 * Unit, FontStyle.Bold);
-        var timeLocationFont = _fontCollection.Get("Noto Sans").CreateFont(20 * Unit, FontStyle.Regular);
+        var timeLocationFont = _fontCollection.Get("Noto Sans").CreateFont(18 * Unit, FontStyle.Regular);
         var emojiFont = _fontCollection.Get("Noto Emoji");
 
         var titleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
@@ -125,30 +126,32 @@ public class ImageService
         for (int i = 0; i < events.Count; i++)
         {
             var evt = events[i];
-            var title = TruncateText(evt.Title, EventsWidth - MarginDouble, titleOptions);
+            var title = TruncateText(evt.Title, EventsWidth - MarginLg - MarginLg, titleOptions);
 
-            titleOptions.Origin = new PointF(DateWidth + Margin, eventY);
+            titleOptions.Origin = new PointF(DateWidth + MarginLg, eventY);
 
             imageContext.DrawText(_lineDrawingOptions, titleOptions, title, _brushBlack, null);
 
             eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(title, titleOptions).Height + Margin);
 
-            var timeLocation = string.IsNullOrWhiteSpace(evt.Location)
-                ? $"{evt.Start:h:mm tt}"
-                : $"{evt.Start:h:mm tt} – {evt.Location}";
-            timeLocation = TruncateText(timeLocation, EventsWidth - MarginDouble, timeLocationOptions);
+            var timeLocation = $"{evt.Start:h:mm tt}".ToLower();
 
-            timeLocationOptions.Origin = new PointF(DateWidth + Margin, eventY);
+            if (!string.IsNullOrWhiteSpace(evt.Location))
+                timeLocation += $" @ {evt.Location}";
+
+            timeLocation = TruncateText(timeLocation, EventsWidth - MarginLg - MarginLg, timeLocationOptions);
+
+            timeLocationOptions.Origin = new PointF(DateWidth + MarginLg, eventY);
 
             imageContext.DrawText(_lineDrawingOptions, timeLocationOptions, timeLocation, _brushBlack, null);
 
-            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height + Margin + MarginHalf);
+            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height + MarginLg);
 
             if (i < events.Count - 1)
             {
-                imageContext.DrawLine(_lineDrawingOptions, _brushBlack, 1f, new PointF(DateWidth + MarginDouble, eventY), new PointF(Width, eventY));
+                imageContext.DrawLine(_lineDrawingOptions, _brushBlack, 1f, new PointF(DateWidth + MarginXl + MarginXl, eventY), new PointF(Width, eventY));
 
-                eventY += Margin + MarginHalf;
+                eventY += MarginLg;
             }
         }
     }
@@ -189,7 +192,7 @@ public class ImageService
         var weatherRect1 = TextMeasurer.MeasureBounds(weatherLine1, weatherOptions);
         var weatherRect2 = TextMeasurer.MeasureBounds(weatherLine2, weatherOptions);
 
-        weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height - MarginHalf - weatherRect2.Height);
+        weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height - MarginSm - weatherRect2.Height);
         imageContext.DrawText(_lineDrawingOptions, weatherOptions, weatherLine1, _brushWhite, null);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height);
