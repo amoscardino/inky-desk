@@ -5,7 +5,6 @@ from PIL import Image
 
 # Initialize the InkyWHAT display
 inky_display = auto(ask_user=True, verbose=True)
-inky_display.set_border(inky_display.RED)
 
 try:
     # Fetch the image
@@ -16,11 +15,9 @@ try:
         # Read the image data
         img = Image.open(io.BytesIO(response.content))
 
-        # Resize the image to fit the InkyWHAT screen
-        img = img.resize(inky_display.resolution, resample=Image.LANCZOS)
-
         # Display the image on the InkyWHAT screen
         inky_display.set_image(img)
+        inky_display.set_border(inky_display.WHITE)
         inky_display.show()
     else:
         print(f"Failed to fetch image. Status code: {response.status_code}")
