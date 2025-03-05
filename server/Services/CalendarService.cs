@@ -38,6 +38,7 @@ public class CalendarService(
             .ThenBy(x => x.Start)
             .ThenBy(x => x.End)
             .Take(4)
+            .Distinct(new EventModelComparer())
             .ToList();
     }
 
@@ -128,13 +129,13 @@ public class CalendarService(
         }
 
         return new EventModel
-            {
-                CalendarName = calendarName,
-                Title = evt.Summary,
-                Location = evt.Location ?? string.Empty,
-                IsAllDay = evt.IsAllDay,
-                Start = occurrence.Period.StartTime.Value,
-                End = occurrence.Period.EndTime?.Value
-            };
+        {
+            CalendarName = calendarName,
+            Title = evt.Summary,
+            Location = evt.Location ?? string.Empty,
+            IsAllDay = evt.IsAllDay,
+            Start = occurrence.Period.StartTime.Value,
+            End = occurrence.Period.EndTime?.Value
+        };
     }
 }

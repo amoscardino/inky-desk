@@ -66,7 +66,7 @@ public class ImageService
         using var image = new Image<Rgb24>((int)Width, (int)Height, Color.White.ToPixel<Rgb24>());
 
         image.Mutate(DrawDate);
-        image.Mutate(imageContext => DrawWeather(imageContext, weather.Item1, weather.Item2));
+        image.Mutate(imageContext => DrawWeather(imageContext, weather));
 
         if (events.Count != 0)
             image.Mutate(imageContext => DrawEvents(imageContext, events));
@@ -156,19 +156,6 @@ public class ImageService
         }
     }
 
-    private static string TruncateText(string text, float width, RichTextOptions options)
-    {
-        var rect = TextMeasurer.MeasureBounds(text, options);
-
-        while (rect.Width >= width)
-        {
-            text = text.TrimEnd('…')[..^1] + "…";
-            rect = TextMeasurer.MeasureBounds(text, options);
-        }
-
-        return text;
-    }
-
     private void DrawNoEvents(IImageProcessingContext imageContext)
     {
         var text = "Nothing!";
@@ -181,21 +168,34 @@ public class ImageService
         imageContext.DrawText(_lineDrawingOptions, options, text, _brushBlack, null);
     }
 
-    private void DrawWeather(IImageProcessingContext imageContext, string weatherLine1, string weatherLine2)
+    private void DrawWeather(IImageProcessingContext imageContext, (string, string) weather)
     {
         var weatherFont = _fontCollection.Get("Noto Sans").CreateFont(16 * Unit, FontStyle.Bold);
-        var weatherOptions = new RichTextOptions(weatherFont)
-        {
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
+        var weatherOptions = new RichTextOptions(weatherFont) { HorizontalAlignment = HorizontalAlignment.Center };
 
-        var weatherRect1 = TextMeasurer.MeasureBounds(weatherLine1, weatherOptions);
-        var weatherRect2 = TextMeasurer.MeasureBounds(weatherLine2, weatherOptions);
+        var line1 = TruncateText(weather.Item1, DateWidth - MarginLg, weatherOptions);
+        var line2 = TruncateText(weather.Item2, DateWidth - MarginLg, weatherOptions);
+
+        var weatherRect1 = TextMeasurer.MeasureBounds(line1, weatherOptions);
+        var weatherRect2 = TextMeasurer.MeasureBounds(line2, weatherOptions);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height - MarginSm - weatherRect2.Height);
-        imageContext.DrawText(_lineDrawingOptions, weatherOptions, weatherLine1, _brushWhite, null);
+        imageContext.DrawText(_lineDrawingOptions, weatherOptions, line1, _brushWhite, null);
 
         weatherOptions.Origin = new PointF(DateWidth / 2, Height - Margin - weatherRect1.Height);
-        imageContext.DrawText(_lineDrawingOptions, weatherOptions, weatherLine2, _brushWhite, null);
+        imageContext.DrawText(_lineDrawingOptions, weatherOptions, line2, _brushWhite, null);
+    }
+
+    private static string TruncateText(string text, float width, RichTextOptions options)
+    {
+        var rect = TextMeasurer.MeasureBounds(text, options);
+
+        while (rect.Width >= width)
+        {
+            text = text.TrimEnd('…')[..^1] + "…";
+            rect = TextMeasurer.MeasureBounds(text, options);
+        }
+
+        return text;
     }
 }
