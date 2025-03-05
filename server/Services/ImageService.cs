@@ -114,41 +114,52 @@ public class ImageService
 
     private void DrawEvents(IImageProcessingContext imageContext, List<EventModel> events)
     {
+        var today = DateTime.Today;
         var eventY = MarginXl;
 
         var titleFont = _fontCollection.Get("Noto Sans").CreateFont(24 * Unit, FontStyle.Bold);
+        var titleAltFont = _fontCollection.Get("Noto Sans").CreateFont(24 * Unit, FontStyle.BoldItalic);
         var timeLocationFont = _fontCollection.Get("Noto Sans").CreateFont(18 * Unit, FontStyle.Regular);
         var emojiFont = _fontCollection.Get("Noto Emoji");
 
         var titleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
+        var titleAltOptions = new RichTextOptions(titleAltFont) { FallbackFontFamilies = [emojiFont] };
         var timeLocationOptions = new RichTextOptions(timeLocationFont) { FallbackFontFamilies = [emojiFont] };
 
         for (int i = 0; i < events.Count; i++)
         {
             var evt = events[i];
-            var title = TruncateText(evt.Title, EventsWidth - MarginLg - MarginLg, titleOptions);
+            var evtTitleOptions = evt.IsAllDay && evt.Start.Date != today ? titleAltOptions : titleOptions;
+            var title = TruncateText(evt.Title, EventsWidth - MarginLg - MarginLg, evtTitleOptions);
 
-            titleOptions.Origin = new PointF(DateWidth + MarginLg, eventY);
+            evtTitleOptions.Origin = new PointF(DateWidth + MarginLg, eventY);
 
-            imageContext.DrawText(_lineDrawingOptions, titleOptions, title, _brushBlack, null);
+            imageContext.DrawText(_lineDrawingOptions, evtTitleOptions, title, _brushBlack, null);
 
-            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(title, titleOptions).Height + Margin);
+            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(title, evtTitleOptions).Height);
 
-            var timeLocation = $"{evt.Start:h:mm tt}".ToLower();
+            if (!evt.IsAllDay)
+            {
+                eventY += Margin;
 
-            if (!string.IsNullOrWhiteSpace(evt.Location))
-                timeLocation += $" @ {evt.Location}";
+                var timeLocation = $"{evt.Start:h:mm tt}".ToLower();
 
-            timeLocation = TruncateText(timeLocation, EventsWidth - MarginLg - MarginLg, timeLocationOptions);
+                if (!string.IsNullOrWhiteSpace(evt.Location))
+                    timeLocation += $" @ {evt.Location}";
 
-            timeLocationOptions.Origin = new PointF(DateWidth + MarginLg, eventY);
+                timeLocation = TruncateText(timeLocation, EventsWidth - MarginLg - MarginLg, timeLocationOptions);
 
-            imageContext.DrawText(_lineDrawingOptions, timeLocationOptions, timeLocation, _brushBlack, null);
+                timeLocationOptions.Origin = new PointF(DateWidth + MarginLg, eventY);
 
-            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height + MarginLg);
+                imageContext.DrawText(_lineDrawingOptions, timeLocationOptions, timeLocation, _brushBlack, null);
+
+                eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height);
+            }
 
             if (i < events.Count - 1)
             {
+                eventY += MarginLg;
+
                 imageContext.DrawLine(_lineDrawingOptions, _brushBlack, 1f, new PointF(DateWidth + MarginXl + MarginXl, eventY), new PointF(Width, eventY));
 
                 eventY += MarginLg;
