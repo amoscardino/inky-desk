@@ -1,5 +1,4 @@
 using InkyDesk.Server.Models;
-using NodaTime;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -141,7 +140,8 @@ public class ImageService
 
         var titleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
         var titleAltOptions = new RichTextOptions(titleAltFont) { FallbackFontFamilies = [emojiFont] };
-        var timeLocationOptions = new RichTextOptions(timeLocationFont) { FallbackFontFamilies = [emojiFont] };
+        var timeOptions = new RichTextOptions(timeLocationFont);
+        var locationOptions = new RichTextOptions(timeLocationFont) { HorizontalAlignment = HorizontalAlignment.Right };
 
         for (int i = 0; i < events.Count; i++)
         {
@@ -162,24 +162,23 @@ public class ImageService
             {
                 eventY += Margin;
 
-                var timeLocation = $"{evt.Start:h:mm tt}".ToLower();
+                var time = $"{evt.Start:h:mm tt}".ToLower();
+                var timeRect = TextMeasurer.MeasureBounds(time, timeOptions);
+                var location = TruncateText(evt.Location, EventsTextWidth - timeRect.Width, locationOptions);
 
-                if (!string.IsNullOrWhiteSpace(evt.Location))
-                    timeLocation += $" — {evt.Location}";
+                timeOptions.Origin = new PointF(eventX, eventY);
+                locationOptions.Origin = new PointF(Width - MarginSm, eventY);
 
-                timeLocation = TruncateText(timeLocation, EventsTextWidth, timeLocationOptions);
+                imageContext.DrawText(_lineDrawingOptions, timeOptions, time, _brushBlack, null);
+                imageContext.DrawText(_lineDrawingOptions, locationOptions, location, _brushBlack, null);
 
-                timeLocationOptions.Origin = new PointF(eventX, eventY);
-
-                imageContext.DrawText(_lineDrawingOptions, timeLocationOptions, timeLocation, _brushBlack, null);
-
-                eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(timeLocation, timeLocationOptions).Height);
+                eventY += (float)Math.Ceiling(timeRect.Height);
             }
 
             // Separator
             if (i < events.Count - 1)
             {
-                eventY += MarginLg;
+                eventY += MarginXl;
 
                 imageContext.DrawLine(_lineDrawingOptions, _brushBlack, 1f, new PointF(eventX, eventY), new PointF(Width, eventY));
 
