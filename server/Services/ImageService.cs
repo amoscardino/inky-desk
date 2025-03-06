@@ -25,7 +25,7 @@ public class ImageService
     private const float EventsWidth = Width - DateWidth - Margin;
     private const float EventsTextWidth = EventsWidth - MarginLg - MarginLg;
 
-    private readonly CalendarService _calendarService;
+    private readonly EventService _eventService;
     private readonly WeatherService _weatherService;
 
     private readonly FontCollection _fontCollection;
@@ -34,9 +34,9 @@ public class ImageService
     private readonly Brush _brushWhite;
     private readonly DrawingOptions _lineDrawingOptions;
 
-    public ImageService(CalendarService calendarService, WeatherService weatherService)
+    public ImageService(EventService eventService, WeatherService weatherService)
     {
-        _calendarService = calendarService;
+        _eventService = eventService;
         _weatherService = weatherService;
 
         _fontCollection = new FontCollection();
@@ -62,7 +62,7 @@ public class ImageService
 
     public async Task<byte[]> GetImageAsync()
     {
-        var events = await _calendarService.GetEventsAsync();
+        var events = await _eventService.GetEventsAsync();
         var weather = await _weatherService.GetWeatherAsync();
 
         using var image = new Image<Rgb24>((int)Width, (int)Height, Color.White.ToPixel<Rgb24>());

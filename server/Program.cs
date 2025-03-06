@@ -1,7 +1,5 @@
 using System.Reflection;
-using InkyDesk.Server.Data;
 using InkyDesk.Server.Services;
-using Microsoft.EntityFrameworkCore;
 
 // Get assembly information for the user agent string
 var assembly = Assembly.GetEntryAssembly()!;
@@ -11,11 +9,6 @@ var userAgent = $"{name} v{version}";
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextPool<InkyDeskDataContext>(opt =>
-{
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("InkyDeskData"));
-});
-
 builder.Services.AddHttpClient("calendar");
 builder.Services.AddHttpClient("weather", client =>
 {
@@ -23,16 +16,11 @@ builder.Services.AddHttpClient("weather", client =>
     client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 });
 builder.Services.AddTransient<CalendarService>();
+builder.Services.AddTransient<EventService>();
 builder.Services.AddTransient<WeatherService>();
 builder.Services.AddTransient<ImageService>();
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<InkyDeskDataContext>();
-    await db.Database.MigrateAsync();
-}
 
 app.UseDeveloperExceptionPage();
 
@@ -41,9 +29,14 @@ app.MapGet("/", () =>
     return userAgent;
 });
 
-app.MapGet("/events", async (CalendarService calendarService) =>
+app.MapGet("/calendars", async (CalendarService calendarService) =>
 {
-    return await calendarService.GetEventsAsync();
+    return await calendarService.GetCalendarsAsync();
+});
+
+app.MapGet("/events", async (EventService eventService) =>
+{
+    return await eventService.GetEventsAsync();
 });
 
 app.MapGet("/weather", async (WeatherService weatherService) =>
