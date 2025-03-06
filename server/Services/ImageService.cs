@@ -9,18 +9,22 @@ namespace InkyDesk.Server.Services;
 
 public class ImageService
 {
-    private const float Unit = 1;
-
-    private const float Margin = 8 * Unit;
+    private const float Margin = 8f;
     private const float MarginXs = Margin / 4f;
     private const float MarginSm = Margin / 2f;
     private const float MarginLg = Margin * 1.5f;
     private const float MarginXl = Margin * 2;
 
-    private const float Width = 400 * Unit;
-    private const float Height = 300 * Unit;
+    private const float FontSize = 24f;
+    private const float FontSizeXs = 16f;
+    private const float FontSizeSm = 18f;
+    private const float FontSizeLg = 36f;
+    private const float FontSizeXl = 92f;
 
-    private const float DateWidth = 110 * Unit;
+    private const float Width = 400f;
+    private const float Height = 300f;
+
+    private const float DateWidth = 110f;
     private const float EventsWidth = Width - DateWidth - Margin;
     private const float EventsTextWidth = EventsWidth - MarginLg - MarginLg;
 
@@ -93,8 +97,8 @@ public class ImageService
         var dayOfWeek = now.ToString("ddd");
 
         // Fonts
-        var dateFont = _fontCollection.Get("Noto Sans").CreateFont(92 * Unit, FontStyle.Bold);
-        var otherFont = _fontCollection.Get("Noto Sans").CreateFont(36 * Unit, FontStyle.Bold);
+        var dateFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeXl, FontStyle.Bold);
+        var otherFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeLg, FontStyle.Bold);
 
         // Options
         var dateOptions = new RichTextOptions(dateFont)
@@ -103,22 +107,17 @@ public class ImageService
             VerticalAlignment = VerticalAlignment.Center,
             Origin = new PointF(DateWidth / 2f, (Height / 2f) - MarginXl)
         };
-
-        // Needed for placement of other text
-        var dateRect = TextMeasurer.MeasureAdvance(date, dateOptions);
-
         var monthOptions = new RichTextOptions(otherFont)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Bottom,
-            Origin = new PointF(DateWidth / 2, (Height / 2f) - (dateRect.Height / 2f) - MarginLg)
+            Origin = new PointF(DateWidth / 2, (Height / 2f) - (FontSizeXl / 2f) - MarginLg)
         };
-
         var dayOfWeekOptions = new RichTextOptions(otherFont)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Top,
-            Origin = new PointF(DateWidth / 2, (Height / 2f) + (dateRect.Height / 2f) - MarginXl + MarginXs)
+            Origin = new PointF(DateWidth / 2, (Height / 2f) + (FontSizeXl / 2f) - MarginXl + MarginXs)
         };
 
         // Draw text
@@ -133,13 +132,13 @@ public class ImageService
         var eventX = DateWidth + MarginLg;
         var eventY = MarginXl; // This will be updated as we draw events
 
-        var titleFont = _fontCollection.Get("Noto Sans").CreateFont(24 * Unit, FontStyle.Bold);
-        var titleAltFont = _fontCollection.Get("Noto Sans").CreateFont(24 * Unit, FontStyle.BoldItalic);
-        var timeLocationFont = _fontCollection.Get("Noto Sans").CreateFont(18 * Unit, FontStyle.Regular);
+        var titleFont = _fontCollection.Get("Noto Sans").CreateFont(FontSize, FontStyle.Bold);
+        var altTitleFont = _fontCollection.Get("Noto Sans").CreateFont(FontSize, FontStyle.BoldItalic);
+        var timeLocationFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeSm, FontStyle.Regular);
         var emojiFont = _fontCollection.Get("Noto Emoji");
 
-        var titleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
-        var titleAltOptions = new RichTextOptions(titleAltFont) { FallbackFontFamilies = [emojiFont] };
+        var normalTitleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
+        var altTitleOptions = new RichTextOptions(altTitleFont) { FallbackFontFamilies = [emojiFont] };
         var timeOptions = new RichTextOptions(timeLocationFont);
         var locationOptions = new RichTextOptions(timeLocationFont) { HorizontalAlignment = HorizontalAlignment.Right };
 
@@ -148,23 +147,24 @@ public class ImageService
             var evt = events[i];
 
             // Event Title
-            var evtTitleOptions = evt.IsAllDay && evt.Start.Date != today ? titleAltOptions : titleOptions;
-            var title = TruncateText(evt.Title, EventsTextWidth, evtTitleOptions);
+            var titleOptions = !evt.IsAllDay || evt.Start.Date == today ? normalTitleOptions : altTitleOptions;
+            var title = TruncateText(evt.Title, EventsTextWidth, titleOptions);
+            var titleBrush = evt.IsAllDay ? _brushRed : _brushBlack;
 
-            evtTitleOptions.Origin = new PointF(eventX, eventY);
+            titleOptions.Origin = new PointF(eventX, eventY);
 
-            imageContext.DrawText(_lineDrawingOptions, evtTitleOptions, title, _brushBlack, null);
+            imageContext.DrawText(_lineDrawingOptions, titleOptions, title, titleBrush, null);
 
-            eventY += (float)Math.Ceiling(TextMeasurer.MeasureBounds(title, evtTitleOptions).Height);
+            eventY += FontSize;
 
             // For non-all day events, add time and location line
             if (!evt.IsAllDay)
             {
-                eventY += Margin;
+                eventY += MarginSm;
 
                 var time = $"{evt.Start:h:mm tt}".ToLower();
-                var timeRect = TextMeasurer.MeasureBounds(time, timeOptions);
-                var location = TruncateText(evt.Location, EventsTextWidth - timeRect.Width, locationOptions);
+                var timeWidth = TextMeasurer.MeasureBounds(time, timeOptions).Width;
+                var location = TruncateText(evt.Location, EventsTextWidth - timeWidth, locationOptions);
 
                 timeOptions.Origin = new PointF(eventX, eventY);
                 locationOptions.Origin = new PointF(Width - MarginSm, eventY);
@@ -172,17 +172,17 @@ public class ImageService
                 imageContext.DrawText(_lineDrawingOptions, timeOptions, time, _brushBlack, null);
                 imageContext.DrawText(_lineDrawingOptions, locationOptions, location, _brushBlack, null);
 
-                eventY += (float)Math.Ceiling(timeRect.Height);
+                eventY += FontSizeSm;
             }
 
             // Separator
             if (i < events.Count - 1)
             {
-                eventY += MarginXl;
+                eventY += MarginLg;
 
                 imageContext.DrawLine(_lineDrawingOptions, _brushBlack, 1f, new PointF(eventX, eventY), new PointF(Width, eventY));
 
-                eventY += MarginLg;
+                eventY += 1f + MarginLg;
             }
         }
     }
@@ -190,7 +190,7 @@ public class ImageService
     private void DrawNoEvents(IImageProcessingContext imageContext)
     {
         var text = "Nothing!";
-        var font = _fontCollection.Get("Noto Sans").CreateFont(24 * Unit, FontStyle.Italic);
+        var font = _fontCollection.Get("Noto Sans").CreateFont(FontSize, FontStyle.Italic);
         var options = new RichTextOptions(font)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
@@ -203,18 +203,17 @@ public class ImageService
 
     private void DrawWeather(IImageProcessingContext imageContext, (string, string) weather)
     {
-        var font = _fontCollection.Get("Noto Sans").CreateFont(16 * Unit, FontStyle.Bold);
+        var font = _fontCollection.Get("Noto Sans").CreateFont(FontSizeXs, FontStyle.Bold);
         var options = new RichTextOptions(font)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Bottom
         };
 
-        var line1 = TruncateText(weather.Item1, DateWidth - MarginLg, options);
-        var line2 = TruncateText(weather.Item2, DateWidth - MarginLg, options);
-        var line1Rect = TextMeasurer.MeasureBounds(line1, options);
+        var line1 = TruncateText(weather.Item1, DateWidth - MarginSm, options);
+        var line2 = TruncateText(weather.Item2, DateWidth - MarginSm, options);
 
-        options.Origin = new PointF(DateWidth / 2, Height - Margin - line1Rect.Height - Margin);
+        options.Origin = new PointF(DateWidth / 2, Height - Margin - FontSizeXs - MarginSm);
         imageContext.DrawText(_lineDrawingOptions, options, line1, _brushWhite, null);
 
         options.Origin = new PointF(DateWidth / 2, Height - Margin);
