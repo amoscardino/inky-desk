@@ -1,5 +1,6 @@
 using InkyDesk.Server.Models;
 using SixLabors.Fonts;
+using SixLabors.Fonts.Tables.AdvancedTypographic;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -24,8 +25,8 @@ public class ImageService
     private const float Width = 400f;
     private const float Height = 300f;
 
-    private const float DateWidth = 110f;
-    private const float EventsWidth = Width - DateWidth - Margin;
+    private const float DateWidth = 120f;
+    private const float EventsWidth = Width - DateWidth;
     private const float EventsTextWidth = EventsWidth - MarginLg - MarginLg;
 
     private readonly EventService _eventService;
@@ -43,6 +44,8 @@ public class ImageService
         _weatherService = weatherService;
 
         _fontCollection = new FontCollection();
+        _fontCollection.Add("Fonts/IBMPlexMono-Regular.ttf");
+        _fontCollection.Add("Fonts/IBMPlexMono-Bold.ttf");
         _fontCollection.Add("Fonts/NotoSans-Regular.ttf");
         _fontCollection.Add("Fonts/NotoSans-Bold.ttf");
         _fontCollection.Add("Fonts/NotoSans-Italic.ttf");
@@ -97,32 +100,32 @@ public class ImageService
         var dayOfWeek = now.ToString("ddd");
 
         // Fonts
-        var dateFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeXl, FontStyle.Bold);
-        var otherFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeLg, FontStyle.Bold);
+        var dateFont = _fontCollection.Get("IBM Plex Mono").CreateFont(FontSizeXl, FontStyle.Bold);
+        var otherFont = _fontCollection.Get("IBM Plex Mono").CreateFont(FontSizeLg, FontStyle.Bold);
 
         // Options
-        var dateOptions = new RichTextOptions(dateFont)
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Origin = new PointF(DateWidth / 2f, (Height / 2f) - MarginXl)
-        };
         var monthOptions = new RichTextOptions(otherFont)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Bottom,
-            Origin = new PointF(DateWidth / 2, (Height / 2f) - (FontSizeXl / 2f) - MarginLg)
+            VerticalAlignment = VerticalAlignment.Top,
+            Origin = new PointF(DateWidth / 2f, MarginLg)
+        };
+        var dateOptions = new RichTextOptions(dateFont)
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Top,
+            Origin = new PointF(DateWidth / 2f, MarginLg + FontSizeLg)
         };
         var dayOfWeekOptions = new RichTextOptions(otherFont)
         {
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Top,
-            Origin = new PointF(DateWidth / 2, (Height / 2f) + (FontSizeXl / 2f) - MarginXl + MarginXs)
+            Origin = new PointF(DateWidth / 2f, MarginLg + FontSizeLg + FontSizeXl)
         };
 
         // Draw text
-        imageContext.DrawText(_lineDrawingOptions, dateOptions, date, _brushWhite, null);
         imageContext.DrawText(_lineDrawingOptions, monthOptions, month, _brushWhite, null);
+        imageContext.DrawText(_lineDrawingOptions, dateOptions, date, _brushWhite, null);
         imageContext.DrawText(_lineDrawingOptions, dayOfWeekOptions, dayOfWeek, _brushWhite, null);
     }
 
@@ -134,13 +137,14 @@ public class ImageService
 
         var titleFont = _fontCollection.Get("Noto Sans").CreateFont(FontSize, FontStyle.Bold);
         var altTitleFont = _fontCollection.Get("Noto Sans").CreateFont(FontSize, FontStyle.BoldItalic);
-        var timeLocationFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeSm, FontStyle.Regular);
+        var timeFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeSm, FontStyle.Regular);
+        var locationFont = _fontCollection.Get("Noto Sans").CreateFont(FontSizeSm, FontStyle.Italic);
         var emojiFont = _fontCollection.Get("Noto Emoji");
 
         var normalTitleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
         var altTitleOptions = new RichTextOptions(altTitleFont) { FallbackFontFamilies = [emojiFont] };
-        var timeOptions = new RichTextOptions(timeLocationFont);
-        var locationOptions = new RichTextOptions(timeLocationFont) { HorizontalAlignment = HorizontalAlignment.Right };
+        var timeOptions = new RichTextOptions(timeFont);
+        var locationOptions = new RichTextOptions(locationFont) { HorizontalAlignment = HorizontalAlignment.Right };
 
         for (int i = 0; i < events.Count; i++)
         {
