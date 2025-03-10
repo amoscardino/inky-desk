@@ -3,7 +3,7 @@ namespace InkyDesk.Server.Services;
 public class WeatherService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("weather");
-    private readonly string _stationId = configuration["Weather:StationId"] ?? string.Empty;
+    private readonly string _stationId = configuration["WeatherStationId"] ?? string.Empty;
 
     public async Task<(string, string)> GetWeatherAsync()
     {
