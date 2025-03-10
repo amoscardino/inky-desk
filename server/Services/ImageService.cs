@@ -25,7 +25,7 @@ public class ImageService
     private const float Width = 400f;
     private const float Height = 300f;
 
-    private const float DateWidth = 120f;
+    private const float DateWidth = 124f;
     private const float EventsWidth = Width - DateWidth;
     private const float EventsTextWidth = EventsWidth - MarginLg - MarginLg;
 
