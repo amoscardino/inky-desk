@@ -96,6 +96,7 @@ public class EventService(
             CalendarName = calendarName,
             Title = evt.Summary,
             Location = evt.Location ?? string.Empty,
+            Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
             Start = evt.Start.Value,
             End = evt.End?.Value
@@ -129,6 +130,7 @@ public class EventService(
             CalendarName = calendarName,
             Title = evt.Summary,
             Location = evt.Location ?? string.Empty,
+            Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
             Start = occurrence.Period.StartTime.Value,
             End = occurrence.Period.EndTime?.Value

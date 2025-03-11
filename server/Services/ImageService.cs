@@ -152,7 +152,7 @@ public class ImageService
 
             // Event Title
             var titleOptions = !evt.IsAllDay || evt.Start.Date == today ? normalTitleOptions : altTitleOptions;
-            var title = TruncateText(evt.Title, EventsTextWidth, titleOptions);
+            var title = TruncateText(evt.GetTitleDisplay(), EventsTextWidth, titleOptions);
             var titleBrush = evt.IsAllDay ? _brushRed : _brushBlack;
 
             titleOptions.Origin = new PointF(eventX, eventY);
@@ -168,7 +168,7 @@ public class ImageService
 
                 var time = $"{evt.Start:h:mm tt}".ToLower();
                 var timeWidth = TextMeasurer.MeasureBounds(time, timeOptions).Width;
-                var location = TruncateText(evt.Location, EventsTextWidth - timeWidth, locationOptions);
+                var location = TruncateText(evt.GetLocationDisplay(), EventsTextWidth - timeWidth - Margin, locationOptions);
 
                 timeOptions.Origin = new PointF(eventX, eventY);
                 locationOptions.Origin = new PointF(Width - MarginSm, eventY);
