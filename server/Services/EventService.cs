@@ -30,11 +30,11 @@ public class EventService(
         }
 
         return models
+            .Distinct(new EventModelComparer())
             .OrderByDescending(x => x.IsAllDay)
             .ThenBy(x => x.Start)
             .ThenBy(x => x.End)
             .Take(4)
-            .Distinct(new EventModelComparer())
             .ToList();
     }
 

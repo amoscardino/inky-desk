@@ -17,6 +17,8 @@ public class CalendarService(IConfiguration config)
 
         var json = await File.ReadAllTextAsync(fullPath);
 
-        return JsonSerializer.Deserialize<List<CalendarModel>>(json, jsonSerializerOptions) ?? [];
+        var calendars = JsonSerializer.Deserialize<List<CalendarModel>>(json, jsonSerializerOptions) ?? [];
+
+        return [.. calendars.Where(c => c.IsEnabled)];
     }
 }

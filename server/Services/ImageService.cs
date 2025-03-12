@@ -144,7 +144,11 @@ public class ImageService
         var normalTitleOptions = new RichTextOptions(titleFont) { FallbackFontFamilies = [emojiFont] };
         var altTitleOptions = new RichTextOptions(altTitleFont) { FallbackFontFamilies = [emojiFont] };
         var timeOptions = new RichTextOptions(timeFont);
-        var locationOptions = new RichTextOptions(locationFont) { HorizontalAlignment = HorizontalAlignment.Right };
+        var locationOptions = new RichTextOptions(locationFont)
+        {
+            FallbackFontFamilies = [emojiFont],
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
 
         for (int i = 0; i < events.Count; i++)
         {
