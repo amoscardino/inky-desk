@@ -197,16 +197,37 @@ public class ImageService
 
     private void DrawNoEvents(IImageProcessingContext imageContext)
     {
-        var text = "Nothing!";
-        var font = _fontCollection.Get("Noto Sans").CreateFont(FontSize, FontStyle.Italic);
-        var options = new RichTextOptions(font)
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Origin = new PointF(DateWidth + (EventsWidth / 2f), Height / 2f)
-        };
+        var date = int.Parse(DateTime.Today.ToString("yyyyMMdd"));
+        var random = new Random(date);
 
-        imageContext.DrawText(_lineDrawingOptions, options, text, _brushBlack, null);
+        var x = DateWidth;
+        var y = 0;
+
+        while (x < Width)
+        {
+            var gap = random.Next(1, 10) * 2;
+            x += gap;
+
+            var lineThickness = random.Next(1, 5) * 2;
+            var brush = random.Next(0, 4) == 0 ? _brushRed : _brushBlack;
+
+            imageContext.DrawLine(_lineDrawingOptions, brush, lineThickness, new PointF(x - 0.5f, 0), new PointF(x - 0.5f, Height));
+
+            x += lineThickness;
+        }
+
+        while (y < Height)
+        {
+            var gap = random.Next(1, 10) * 2;
+            y += gap;
+
+            var lineThickness = random.Next(1, 5) * 2;
+            var brush = random.Next(0, 4) == 0 ? _brushRed : _brushBlack;
+
+            imageContext.DrawLine(_lineDrawingOptions, brush, lineThickness, new PointF(DateWidth, y - 0.5f), new PointF(Width, y - 0.5f));
+
+            y += lineThickness;
+        }
     }
 
     private void DrawWeather(IImageProcessingContext imageContext, (string, string) weather)
