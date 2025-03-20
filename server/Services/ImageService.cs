@@ -129,6 +129,25 @@ public class ImageService
         imageContext.DrawText(_lineDrawingOptions, dayOfWeekOptions, dayOfWeek, _brushWhite, null);
     }
 
+    private void DrawWeather(IImageProcessingContext imageContext, (string, string) weather)
+    {
+        var font = _fontCollection.Get("Noto Sans").CreateFont(FontSizeXs, FontStyle.Bold);
+        var options = new RichTextOptions(font)
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Bottom
+        };
+
+        var line1 = TruncateText(weather.Item1, DateWidth - MarginSm, options);
+        var line2 = TruncateText(weather.Item2, DateWidth - MarginSm, options);
+
+        options.Origin = new PointF(DateWidth / 2, Height - Margin - FontSizeXs - MarginSm);
+        imageContext.DrawText(_lineDrawingOptions, options, line1, _brushWhite, null);
+
+        options.Origin = new PointF(DateWidth / 2, Height - Margin);
+        imageContext.DrawText(_lineDrawingOptions, options, line2, _brushWhite, null);
+    }
+
     private void DrawEvents(IImageProcessingContext imageContext, List<EventModel> events)
     {
         var today = DateTime.Today;
@@ -197,56 +216,35 @@ public class ImageService
 
     private void DrawNoEvents(IImageProcessingContext imageContext)
     {
-        var date = int.Parse(DateTime.Today.ToString("yyyyMMdd"));
-        var random = new Random(date);
+        var margin = MarginXs;
+        var defaultX = DateWidth + margin;
+        var defaultY = margin;
+        var multiple = 2f;
+        var size = 16f;
+        var lgSize = (size * multiple) + ((multiple - 1) * margin);
 
-        var x = DateWidth;
-        var y = 0;
-
-        while (x < Width)
+        for (var x = defaultX; x < Width; x += size + margin)
         {
-            var gap = random.Next(1, 10) * 2;
-            x += gap;
+            for (var y = defaultY; y < Height; y += size + margin)
+            {
+                var brush = RandomUtilities.GetRandomElement((_brushRed, 1), (_brushBlack, 1), (_brushWhite, 2));
 
-            var lineThickness = random.Next(1, 5) * 2;
-            var brush = random.Next(0, 4) == 0 ? _brushRed : _brushBlack;
-
-            imageContext.DrawLine(_lineDrawingOptions, brush, lineThickness, new PointF(x - 0.5f, 0), new PointF(x - 0.5f, Height));
-
-            x += lineThickness;
+                imageContext.FillPolygon(brush, new PointF(x, y), new PointF(x + size, y), new PointF(x + size, y + size), new PointF(x, y + size));
+            }
         }
 
-        while (y < Height)
+        for (var x = defaultX; x < Width; x += lgSize + margin)
         {
-            var gap = random.Next(1, 10) * 2;
-            y += gap;
+            for (var y = defaultY; y < Height; y += lgSize + margin)
+            {
+                if (RandomUtilities.GetRandomElement((true, 3), (false, 1)))
+                    continue;
 
-            var lineThickness = random.Next(1, 5) * 2;
-            var brush = random.Next(0, 4) == 0 ? _brushRed : _brushBlack;
+                var brush = RandomUtilities.GetRandomElement((_brushRed, 1), (_brushBlack, 2));
 
-            imageContext.DrawLine(_lineDrawingOptions, brush, lineThickness, new PointF(DateWidth, y - 0.5f), new PointF(Width, y - 0.5f));
-
-            y += lineThickness;
+                imageContext.FillPolygon(brush, new PointF(x, y), new PointF(x + lgSize, y), new PointF(x + lgSize, y + lgSize), new PointF(x, y + lgSize));
+            }
         }
-    }
-
-    private void DrawWeather(IImageProcessingContext imageContext, (string, string) weather)
-    {
-        var font = _fontCollection.Get("Noto Sans").CreateFont(FontSizeXs, FontStyle.Bold);
-        var options = new RichTextOptions(font)
-        {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Bottom
-        };
-
-        var line1 = TruncateText(weather.Item1, DateWidth - MarginSm, options);
-        var line2 = TruncateText(weather.Item2, DateWidth - MarginSm, options);
-
-        options.Origin = new PointF(DateWidth / 2, Height - Margin - FontSizeXs - MarginSm);
-        imageContext.DrawText(_lineDrawingOptions, options, line1, _brushWhite, null);
-
-        options.Origin = new PointF(DateWidth / 2, Height - Margin);
-        imageContext.DrawText(_lineDrawingOptions, options, line2, _brushWhite, null);
     }
 
     private static string TruncateText(string text, float width, RichTextOptions options)
