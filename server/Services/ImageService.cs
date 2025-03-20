@@ -25,7 +25,7 @@ public class ImageService
     private const float Width = 400f;
     private const float Height = 300f;
 
-    private const float DateWidth = 124f;
+    private const float DateWidth = 126f;
     private const float EventsWidth = Width - DateWidth;
     private const float EventsTextWidth = EventsWidth - MarginLg - MarginLg;
 
@@ -223,16 +223,15 @@ public class ImageService
 
     private void DrawPattern(IImageProcessingContext imageContext, float? startY = null)
     {
-        var margin = MarginXs;
-        var defaultX = DateWidth + margin;
-        var defaultY = startY ?? margin;
+        var defaultX = DateWidth + MarginXs;
+        var defaultY = startY ?? MarginXs;
         var multiple = 2f;
-        var size = 16f;
-        var lgSize = (size * multiple) + ((multiple - 1) * margin);
+        var size = ((EventsWidth - MarginXs) / 16) - MarginXs;
+        var lgSize = (size * multiple) + ((multiple - 1) * MarginXs);
 
-        for (var x = defaultX; x < Width; x += size + margin)
+        for (var x = defaultX; x < Width - MarginXs; x += size + MarginXs)
         {
-            for (var y = defaultY; y < Height; y += size + margin)
+            for (var y = defaultY; y < Height; y += size + MarginXs)
             {
                 var brush = RandomUtilities.GetRandomElement((_brushRed, 1), (_brushBlack, 1), (_brushWhite, 2));
 
@@ -240,9 +239,9 @@ public class ImageService
             }
         }
 
-        for (var x = defaultX; x < Width; x += lgSize + margin)
+        for (var x = defaultX; x < Width - lgSize - MarginXs; x += lgSize + MarginXs)
         {
-            for (var y = defaultY; y < Height; y += lgSize + margin)
+            for (var y = defaultY; y < Height - lgSize; y += lgSize + MarginXs)
             {
                 if (RandomUtilities.GetRandomElement((true, 3), (false, 1)))
                     continue;
