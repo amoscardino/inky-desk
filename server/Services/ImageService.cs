@@ -75,11 +75,7 @@ public class ImageService
 
         image.Mutate(DrawDate);
         image.Mutate(imageContext => DrawWeather(imageContext, weather));
-
-        if (events.Count != 0)
-            image.Mutate(imageContext => DrawEvents(imageContext, events));
-        else
-            image.Mutate(DrawNoEvents);
+        image.Mutate(imageContext => DrawEvents(imageContext, events));
 
         using var memoryStream = new MemoryStream();
         await image.SaveAsPngAsync(memoryStream);
@@ -150,6 +146,13 @@ public class ImageService
 
     private void DrawEvents(IImageProcessingContext imageContext, List<EventModel> events)
     {
+        if (events.Count == 0)
+        {
+            // No events to draw, just draw a pattern
+            DrawPattern(imageContext);
+            return;
+        }
+
         var today = DateTime.Today;
         var eventX = DateWidth + MarginLg;
         var eventY = MarginXl; // This will be updated as we draw events
@@ -211,14 +214,18 @@ public class ImageService
 
                 eventY += 1f + MarginLg;
             }
+            else
+                eventY += MarginXl;
         }
+
+        DrawPattern(imageContext, eventY);
     }
 
-    private void DrawNoEvents(IImageProcessingContext imageContext)
+    private void DrawPattern(IImageProcessingContext imageContext, float? startY = null)
     {
         var margin = MarginXs;
         var defaultX = DateWidth + margin;
-        var defaultY = margin;
+        var defaultY = startY ?? margin;
         var multiple = 2f;
         var size = 16f;
         var lgSize = (size * multiple) + ((multiple - 1) * margin);

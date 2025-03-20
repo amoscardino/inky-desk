@@ -80,16 +80,13 @@ public class EventService(
         if (evt.RecurrenceRules.Any())
             return null;
 
-        if (evt.Start.Value.Date != now.Date)
+        var evtStart = evt.Start.IsUtc ? evt.Start.Value.ToLocalTime() : evt.Start.Value;
+
+        if (evtStart.Date != now.Date)
             return null;
 
-        if (!evt.IsAllDay)
-        {
-            var evtTime = evt.Start.IsUtc ? evt.Start.Value.ToLocalTime() : evt.Start.Value;
-
-            if (evtTime < now)
-                return null;
-        }
+        if (!evt.IsAllDay && evtStart < now)
+            return null;
 
         return new EventModel
         {
