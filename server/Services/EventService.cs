@@ -33,7 +33,6 @@ public class EventService(
             .Distinct(new EventModelComparer())
             .OrderByDescending(x => x.IsAllDay)
             .ThenBy(x => x.Start)
-            .ThenBy(x => x.End)
             .Take(4)
             .ToList();
     }
@@ -80,7 +79,7 @@ public class EventService(
         if (evt.RecurrenceRules.Any())
             return null;
 
-        var evtStart = evt.Start.IsUtc ? evt.Start.Value.ToLocalTime() : evt.Start.Value;
+        var evtStart = evt.Start.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
 
         if (evtStart.Date != now.Date)
             return null;
@@ -95,8 +94,7 @@ public class EventService(
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
-            Start = evt.Start.Value,
-            End = evt.End?.Value
+            Start = evtStart
         };
     }
 
@@ -129,8 +127,7 @@ public class EventService(
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
-            Start = occurrence.Period.StartTime.Value,
-            End = occurrence.Period.EndTime?.Value
+            Start = occurrence.Period.StartTime.Value
         };
     }
 }

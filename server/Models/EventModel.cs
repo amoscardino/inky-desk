@@ -10,7 +10,6 @@ public class EventModel
 
     public bool IsAllDay { get; set; }
     public DateTime Start { get; set; }
-    public DateTime? End { get; set; }
 
     public string GetTitleDisplay()
     {
@@ -56,12 +55,11 @@ public class EventModelComparer : IEqualityComparer<EventModel>
                x.Title == y.Title &&
                x.Location == y.Location &&
                x.IsAllDay == y.IsAllDay &&
-               x.Start == y.Start &&
-               x.End == y.End;
+               x.Start == y.Start;
     }
 
     public int GetHashCode(EventModel obj)
     {
-        return HashCode.Combine(obj.CalendarName, obj.Title, obj.Location, obj.IsAllDay, obj.Start, obj.End);
+        return HashCode.Combine(obj.CalendarName, obj.Title, obj.Location, obj.IsAllDay, obj.Start);
     }
 }
