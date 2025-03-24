@@ -110,15 +110,13 @@ public class EventService(
         if (occurrences.Count == 0)
             return null;
 
-        var occurrence = occurrences.First();
+        var evtStart = occurrences.First().Period.StartTime.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
 
-        if (!evt.IsAllDay)
-        {
-            var evtTime = occurrence.Period.StartTime.IsUtc ? occurrence.Period.StartTime.Value.ToLocalTime() : occurrence.Period.StartTime.Value;
+        if (evtStart.Date != now.Date)
+            return null;
 
-            if (evtTime < now)
-                return null;
-        }
+        if (!evt.IsAllDay && evtStart < now)
+            return null;
 
         return new EventModel
         {
@@ -127,7 +125,7 @@ public class EventService(
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
-            Start = occurrence.Period.StartTime.Value
+            Start = evtStart
         };
     }
 }
