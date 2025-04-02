@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
@@ -7,13 +8,19 @@ namespace InkyDesk.Server.Services;
 
 public class EventService(
     CalendarService calendarService,
+    ReplacementsService replacementsService,
     IHttpClientFactory httpClientFactory
 )
 {
+    private static readonly JsonSerializerOptions jsonSerializerOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient httpClient = httpClientFactory.CreateClient("calendar");
+
+    private List<ReplacementModel> replacements = [];
 
     public async Task<List<EventModel>> GetEventsAsync()
     {
+        replacements = await replacementsService.GetReplacementsAsync();
+
         var models = new List<EventModel>();
         var calendars = await calendarService.GetCalendarsAsync();
 
@@ -47,7 +54,7 @@ public class EventService(
         return string.Empty;
     }
 
-    private static List<EventModel> GetEvents(Calendar calendar, string calendarName, int offset)
+    private List<EventModel> GetEvents(Calendar calendar, string calendarName, int offset)
     {
         var calEvents = new List<EventModel>();
         var now = DateTime.Now.AddDays(offset);
@@ -74,7 +81,7 @@ public class EventService(
         return calEvents;
     }
 
-    private static EventModel? GetRegularEvent(CalendarEvent evt, string calendarName, DateTime now)
+    private EventModel? GetRegularEvent(CalendarEvent evt, string calendarName, DateTime now)
     {
         if (evt.RecurrenceRules.Any())
             return null;
@@ -90,7 +97,7 @@ public class EventService(
         return new EventModel
         {
             CalendarName = calendarName,
-            Title = evt.Summary,
+            Title = GetTitle(evt.Summary),
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
@@ -98,7 +105,7 @@ public class EventService(
         };
     }
 
-    private static EventModel? GetOccurrenceEvent(CalendarEvent evt, string calendarName, DateTime now)
+    private EventModel? GetOccurrenceEvent(CalendarEvent evt, string calendarName, DateTime now)
     {
         if (!evt.RecurrenceRules.Any())
             return null;
@@ -121,11 +128,21 @@ public class EventService(
         return new EventModel
         {
             CalendarName = calendarName,
-            Title = evt.Summary,
+            Title = GetTitle(evt.Summary),
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
             Start = evtStart
         };
+    }
+
+    private string GetTitle(string title)
+    {
+        var newTitle = title;
+
+        foreach (var replacement in replacements)
+            newTitle = newTitle.Replace(replacement.Find, replacement.Replace, StringComparison.OrdinalIgnoreCase);
+
+        return newTitle;
     }
 }

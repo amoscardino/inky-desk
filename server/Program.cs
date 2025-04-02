@@ -21,8 +21,9 @@ builder.Services.AddHttpClient("weather", client =>
 // Custom services
 builder.Services.AddTransient<CalendarService>();
 builder.Services.AddTransient<EventService>();
-builder.Services.AddTransient<WeatherService>();
 builder.Services.AddTransient<ImageService>();
+builder.Services.AddTransient<ReplacementsService>();
+builder.Services.AddTransient<WeatherService>();
 
 var app = builder.Build();
 
