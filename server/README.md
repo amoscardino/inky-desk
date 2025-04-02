@@ -31,6 +31,21 @@ Calendars to be included need to be defined in a file called `calendars.json`. T
 
 The `name` property is just for keeping the file organized. `url` and `isEnabled` should be pretty self-explanatory. `offset` allows for bumping events some amount of days forward or backwards. My use case is for my city's trash pickup calendar. I want to know about the pickup the day before it happens, so I set the `offset` to 1. Note that the offset is applied to the current date, not the event.
 
+### `replacements.json`
+
+Titles can be modified via rules to make them shorter (and thus fit better on the small screen). These replacements are done via the `replacements.json` file which should be in the same folder as `calendars.json`. The format looks like this:
+
+```json
+[
+    {
+        "name": "Example",
+        "find": "Example: ",
+        "replace": "Ex: ",
+        "isEnabled": true
+    }
+]
+```
+
 ## Running via Docker
 
 I publish the server app as a Docker container and it can be run like so:
