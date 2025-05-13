@@ -40,7 +40,12 @@ public class EventModel
                 return map[key];
         }
 
-        return Location;
+        // Replace new lines with spaces and return
+        return Location
+            .Replace("\r\n", " ", StringComparison.CurrentCultureIgnoreCase)
+            .Replace("\r", " ", StringComparison.CurrentCultureIgnoreCase)
+            .Replace("\n", " ", StringComparison.CurrentCultureIgnoreCase)
+            .Trim();
     }
 }
 
