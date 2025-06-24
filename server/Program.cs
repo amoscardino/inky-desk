@@ -10,12 +10,15 @@ var userAgent = $"{name} v{version}";
 var builder = WebApplication.CreateBuilder(args);
 
 // Named HTTP clients
-builder.Services.AddHttpClient("calendar");
+builder.Services.AddHttpClient("calendar", client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+});
 builder.Services.AddHttpClient("weather", client =>
 {
     client.BaseAddress = new Uri("https://api.weather.gov");
     // weather.gov requires a user agent string
-    client.DefaultRequestHeaders.Add("User-Agent", userAgent);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
 });
 
 // Custom services

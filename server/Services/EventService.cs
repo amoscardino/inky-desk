@@ -86,7 +86,9 @@ public class EventService(
         if (evt.RecurrenceRules.Any())
             return null;
 
-        var evtStart = evt.Start.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
+        var evtStart = evt.Start.TimeZoneName == null || evt.Start.TimeZoneName == "Customized Time Zone"
+            ? evt.Start.Value
+            : evt.Start.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
 
         if (evtStart.Date != now.Date)
             return null;
@@ -117,7 +119,11 @@ public class EventService(
         if (occurrences.Count == 0)
             return null;
 
-        var evtStart = occurrences.First().Period.StartTime.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
+        var firstOccurrence = occurrences.First();
+        var evtStartTime = firstOccurrence.Period.StartTime;
+        var evtStart = evtStartTime.TimeZoneName == null || evtStartTime.TimeZoneName == "Customized Time Zone"
+            ? evtStartTime.Value
+            : evtStartTime.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
 
         if (evtStart.Date != now.Date)
             return null;
