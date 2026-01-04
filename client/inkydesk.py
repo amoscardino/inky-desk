@@ -8,7 +8,7 @@ inky_display = auto(ask_user=True, verbose=True)
 
 try:
     # Fetch the image
-    response = requests.get('http://satellite-5.local:5229/image')
+    response = requests.get('http://asteria.local:5229/image')
     
     # Check if the request was successful
     if response.status_code == 200:
