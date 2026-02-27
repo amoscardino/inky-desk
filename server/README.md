@@ -4,7 +4,7 @@ An ASP.NET Core API to provided data and an image to the client.
 
 ## Prerequisites
 
-- .NET 8 SDK
+- .NET 10 SDK
 - Docker (for deployment only)
 
 ## Configuration

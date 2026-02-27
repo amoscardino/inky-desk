@@ -24,7 +24,7 @@ builder.Services.AddHttpClient("weather", client =>
 // Custom services
 builder.Services.AddTransient<CalendarService>();
 builder.Services.AddTransient<EventService>();
-builder.Services.AddTransient<ImageService>();
+builder.Services.AddSingleton<ImageService>();
 builder.Services.AddTransient<ReplacementsService>();
 builder.Services.AddTransient<WeatherService>();
 
@@ -59,9 +59,9 @@ app.MapGet("/weather", async (WeatherService weatherService) =>
 });
 
 // Returns an image as a PNG file. This is what is actually called by the client script.
-app.MapGet("/image", async (ImageService imageService) =>
+app.MapGet("/image", async (ImageService imageService, EventService eventService, WeatherService weatherService) =>
 {
-    var imageBytes = await imageService.GetImageAsync();
+    var imageBytes = await imageService.GetImageAsync(eventService, weatherService);
 
     return Results.File(imageBytes, "image/png");
 });

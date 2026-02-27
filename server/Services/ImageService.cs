@@ -29,20 +29,14 @@ public class ImageService
     private const float EventsWidth = Width - DateWidth;
     private const float EventsTextWidth = EventsWidth - MarginLg - MarginLg;
 
-    private readonly EventService _eventService;
-    private readonly WeatherService _weatherService;
-
     private readonly FontCollection _fontCollection;
     private readonly Brush _brushBlack;
     private readonly Brush _brushRed;
     private readonly Brush _brushWhite;
     private readonly DrawingOptions _lineDrawingOptions;
 
-    public ImageService(EventService eventService, WeatherService weatherService)
+    public ImageService()
     {
-        _eventService = eventService;
-        _weatherService = weatherService;
-
         _fontCollection = new FontCollection();
         _fontCollection.Add("Fonts/IBMPlexMono-Regular.ttf");
         _fontCollection.Add("Fonts/IBMPlexMono-Bold.ttf");
@@ -66,10 +60,10 @@ public class ImageService
         };
     }
 
-    public async Task<byte[]> GetImageAsync()
+    public async Task<byte[]> GetImageAsync(EventService eventService, WeatherService weatherService)
     {
-        var events = await _eventService.GetEventsAsync();
-        var weather = await _weatherService.GetWeatherAsync();
+        var events = await eventService.GetEventsAsync();
+        var weather = await weatherService.GetWeatherAsync();
 
         using var image = new Image<Rgb24>((int)Width, (int)Height, Color.White.ToPixel<Rgb24>());
 
