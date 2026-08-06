@@ -1,5 +1,25 @@
 using System.Reflection;
+using Ical.Net;
 using InkyDesk.Server.Services;
+
+// Some calendar clients emit a placeholder TZID (e.g. "Customized Time Zone") that no
+// lookup can resolve. Ical.Net's default resolver throws ArgumentException for those, which
+// blows up recurrence expansion deep inside GetOccurrences. Treat anything unresolvable as
+// the machine's local zone instead, which is what an empty TZID already falls back to.
+TimeZoneResolvers.TimeZoneResolver = tzId =>
+{
+    try
+    {
+        if (DefaultTimeZoneResolver.GetZone(tzId) is { } zone)
+            return zone;
+    }
+    catch (ArgumentException)
+    {
+        // The default resolver matched a mapping key but couldn't finish resolving it.
+    }
+
+    return DefaultTimeZoneResolver.GetZone(string.Empty);
+};
 
 // Get assembly information for the user agent string
 var assembly = Assembly.GetEntryAssembly()!;

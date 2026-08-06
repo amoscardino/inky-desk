@@ -86,9 +86,7 @@ public class EventService(
         if (evt.RecurrenceRules.Any())
             return null;
 
-        var evtStart = evt.Start.TimeZoneName == null || evt.Start.TimeZoneName == "Customized Time Zone"
-            ? evt.Start.Value
-            : evt.Start.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
+        var evtStart = GetLocalStart(evt.Start);
 
         if (evtStart.Date != now.Date)
             return null;
@@ -120,10 +118,7 @@ public class EventService(
             return null;
 
         var firstOccurrence = occurrences.First();
-        var evtStartTime = firstOccurrence.Period.StartTime;
-        var evtStart = evtStartTime.TimeZoneName == null || evtStartTime.TimeZoneName == "Customized Time Zone"
-            ? evtStartTime.Value
-            : evtStartTime.ToTimeZone(TimeZoneInfo.Local.StandardName).Value;
+        var evtStart = GetLocalStart(firstOccurrence.Period.StartTime);
 
         if (evtStart.Date != now.Date)
             return null;
@@ -141,6 +136,12 @@ public class EventService(
             Start = evtStart
         };
     }
+
+    // A null TZID means a floating time, which is already local by definition.
+    private static DateTime GetLocalStart(CalDateTime dateTime)
+        => dateTime.TimeZoneName == null
+            ? dateTime.Value
+            : dateTime.ToTimeZone(TimeZoneInfo.Local.Id).Value;
 
     private string GetTitle(string title)
     {
