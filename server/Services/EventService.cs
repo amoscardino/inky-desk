@@ -12,7 +12,6 @@ public class EventService(
     IHttpClientFactory httpClientFactory
 )
 {
-    private static readonly JsonSerializerOptions jsonSerializerOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient httpClient = httpClientFactory.CreateClient("calendar");
 
     private List<ReplacementModel> replacements = [];
@@ -33,15 +32,17 @@ public class EventService(
 
             var cal = Calendar.Load(calendarText);
 
+            if (cal == null)
+                continue;
+
             models.AddRange(GetEvents(cal, calendar.Name, calendar.Offset ?? 0));
         }
 
-        return models
+        return [.. models
             .Distinct(new EventModelComparer())
             .OrderByDescending(x => x.IsAllDay)
             .ThenBy(x => x.Start)
-            .Take(4)
-            .ToList();
+            .Take(4)];
     }
 
     private async Task<string> GetCalendarTextAsync(string url)
@@ -83,7 +84,7 @@ public class EventService(
 
     private EventModel? GetRegularEvent(CalendarEvent evt, string calendarName, DateTime now)
     {
-        if (evt.RecurrenceRules.Any())
+        if (evt.RecurrenceRule != null || evt.Start == null)
             return null;
 
         var evtStart = GetLocalStart(evt.Start);
@@ -97,7 +98,7 @@ public class EventService(
         return new EventModel
         {
             CalendarName = calendarName,
-            Title = GetTitle(evt.Summary),
+            Title = GetTitle(evt.Summary ?? string.Empty),
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
@@ -107,33 +108,36 @@ public class EventService(
 
     private EventModel? GetOccurrenceEvent(CalendarEvent evt, string calendarName, DateTime now)
     {
-        if (!evt.RecurrenceRules.Any())
+        if (evt.RecurrenceRule == null)
             return null;
 
-        var startTime = new CalDateTime(now.Date, evt.Start.TimeZoneName);
-        var endTime = new CalDateTime(now.Date.AddDays(1).AddMinutes(-1), evt.Start.TimeZoneName);
-        var occurrences = evt.GetOccurrences(startTime, endTime).ToList();
+        // Expand over the local day, not the event's own zone: `now` is local and the day we
+        // filter to is local, so a zone-relative window can straddle the wrong local date.
+        var dayStart = new CalDateTime(now.Date, TimeZoneInfo.Local.Id);
+        var dayEnd = new CalDateTime(now.Date.AddDays(1), TimeZoneInfo.Local.Id);
 
-        if (occurrences.Count == 0)
-            return null;
+        // GetOccurrences is lazy and unbounded for an open-ended rule, so stop at the day
+        // boundary rather than taking a fixed count -- the first occurrence back can start
+        // before today (a multi-day span) or already be over, and would hide today's.
+        var evtStart = evt
+            .GetOccurrences(dayStart)
+            .TakeWhile(o => o.Period.StartTime < dayEnd)
+            .Select(o => GetLocalStart(o.Period.StartTime))
+            .Where(start => start.Date == now.Date && (evt.IsAllDay || start >= now))
+            .Cast<DateTime?>()
+            .FirstOrDefault();
 
-        var firstOccurrence = occurrences.First();
-        var evtStart = GetLocalStart(firstOccurrence.Period.StartTime);
-
-        if (evtStart.Date != now.Date)
-            return null;
-
-        if (!evt.IsAllDay && evtStart < now)
+        if (evtStart == null)
             return null;
 
         return new EventModel
         {
             CalendarName = calendarName,
-            Title = GetTitle(evt.Summary),
+            Title = GetTitle(evt.Summary ?? string.Empty),
             Location = evt.Location ?? string.Empty,
             Notes = evt.Description ?? string.Empty,
             IsAllDay = evt.IsAllDay,
-            Start = evtStart
+            Start = evtStart.Value
         };
     }
 

@@ -18,7 +18,7 @@ TimeZoneResolvers.TimeZoneResolver = tzId =>
         // The default resolver matched a mapping key but couldn't finish resolving it.
     }
 
-    return DefaultTimeZoneResolver.GetZone(string.Empty);
+    return DefaultTimeZoneResolver.GetZone(string.Empty)!;
 };
 
 // Get assembly information for the user agent string
