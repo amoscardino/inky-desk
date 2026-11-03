@@ -47,7 +47,7 @@ public class EventService(
 
     private async Task<string> GetCalendarTextAsync(string url)
     {
-        var response = await httpClient.GetAsync(url);
+        using var response = await httpClient.GetAsync(url);
 
         if (response.IsSuccessStatusCode)
             return await response.Content.ReadAsStringAsync();

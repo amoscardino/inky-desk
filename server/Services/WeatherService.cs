@@ -7,7 +7,7 @@ public class WeatherService(IHttpClientFactory httpClientFactory, IConfiguration
 
     public async Task<(string, string)> GetWeatherAsync()
     {
-        var response = await _httpClient.GetAsync($"/stations/{_stationId}/observations/latest");
+        using var response = await _httpClient.GetAsync($"/stations/{_stationId}/observations/latest");
 
         response.EnsureSuccessStatusCode();
 
